@@ -6,7 +6,7 @@ export interface Product {
   description: string;
   price: number;
   category: string;
-  images: string[];
+  images: string[] | any; // Handle both string[] and Json from Supabase
   stock: number;
   featured?: boolean;
   created_at?: string;
@@ -49,8 +49,8 @@ export interface UserProfile {
   first_name?: string;
   last_name?: string;
   phone?: string;
-  address?: Address;
-  role: 'customer' | 'admin';
+  address?: Address | any; // Handle both Address and Json from Supabase
+  role: 'customer' | 'admin' | string; // Allow string to handle any value from DB
   created_at?: string;
   updated_at?: string;
 }
@@ -68,9 +68,9 @@ export interface OrderItem {
 export interface Order {
   id: string;
   user_id: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | string; // Allow string to handle any value from DB
   total: number;
-  shipping_address: Address;
+  shipping_address: Address | any; // Handle both Address and Json from Supabase
   payment_intent?: string;
   created_at?: string;
   updated_at?: string;
@@ -82,7 +82,7 @@ export interface Appointment {
   id: string;
   user_id: string;
   appointment_date: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'completed' | 'cancelled' | string; // Allow string to handle any value from DB
   notes?: string;
   created_at?: string;
   updated_at?: string;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,16 +7,7 @@ import { Home, ShoppingCart, Heart, Star, Minus, Plus } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import { formatCurrency } from "@/lib/utils";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  images: string[];
-  stock: number;
-}
+import { Product } from "@/types";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,9 +34,15 @@ const ProductDetail = () => {
       }
 
       if (data) {
-        setProduct(data);
-        if (data.images && data.images.length > 0) {
-          setSelectedImage(data.images[0]);
+        // Handle the case where images might be a string or any other type
+        const productData: Product = {
+          ...data,
+          images: Array.isArray(data.images) ? data.images : []
+        };
+        
+        setProduct(productData);
+        if (productData.images && productData.images.length > 0) {
+          setSelectedImage(productData.images[0]);
         }
       }
 
@@ -110,17 +106,17 @@ const ProductDetail = () => {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">
+            <BreadcrumbLink href="/">
               <Home className="h-4 w-4" />
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/shop">Shop</BreadcrumbLink>
+            <BreadcrumbLink href="/shop">Shop</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to={`/shop/${product.category.toLowerCase()}`}>
+            <BreadcrumbLink href={`/shop/${product.category.toLowerCase()}`}>
               {product.category}
             </BreadcrumbLink>
           </BreadcrumbItem>

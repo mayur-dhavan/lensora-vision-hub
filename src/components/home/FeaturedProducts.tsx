@@ -66,7 +66,13 @@ const FeaturedProducts = () => {
   };
 
   const handleAddToCart = (product: typeof products[0]) => {
-    addToCart(product);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1, // Add the quantity property
+      image: product.image
+    });
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart`

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,23 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Home, Search } from "lucide-react";
 import ProductCard from "@/components/shop/ProductCard";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  images: string[];
-  stock: number;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-}
+import { Product, Category } from "@/types";
 
 const Shop = () => {
   const { category: categoryParam } = useParams<{ category: string }>();
@@ -72,7 +55,13 @@ const Shop = () => {
       }
       
       if (data) {
-        setProducts(data);
+        // Process each product to ensure the images field is an array
+        const processedProducts: Product[] = data.map(item => ({
+          ...item,
+          images: Array.isArray(item.images) ? item.images : []
+        }));
+        
+        setProducts(processedProducts);
       }
       
       setLoading(false);
@@ -92,13 +81,13 @@ const Shop = () => {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">
+            <BreadcrumbLink href="/">
               <Home className="h-4 w-4" />
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/shop">Shop</BreadcrumbLink>
+            <BreadcrumbLink href="/shop">Shop</BreadcrumbLink>
           </BreadcrumbItem>
           {categoryParam && (
             <>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -11,6 +12,13 @@ import { formatCurrency } from "@/lib/utils";
 
 interface OrderWithItems extends Order {
   items: (OrderItem & { product: Product })[];
+}
+
+interface OrderStep {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  status?: 'complete' | 'current' | 'upcoming' | 'cancelled';
 }
 
 const OrderTracking = () => {
@@ -49,12 +57,14 @@ const OrderTracking = () => {
 
         if (itemsError) throw itemsError;
 
-        const typedOrderData = {
+        // Create properly typed order data
+        const orderWithItems = {
           ...orderData,
-          status: orderData.status as Order['status'] // Type assertion
+          status: orderData.status as Order['status'],
+          items: itemsData as any
         };
         
-        setOrder({ ...typedOrderData, items: itemsData as any });
+        setOrder(orderWithItems as OrderWithItems);
 
       } catch (err: any) {
         console.error('Error fetching order:', err);
@@ -68,7 +78,7 @@ const OrderTracking = () => {
   }, [id, user]);
 
   const getOrderSteps = () => {
-    const steps = [
+    const steps: OrderStep[] = [
       { id: 'pending', label: 'Order Placed', icon: <ShoppingBag className="h-6 w-6" /> },
       { id: 'processing', label: 'Processing', icon: <Package className="h-6 w-6" /> },
       { id: 'shipped', label: 'Shipped', icon: <Truck className="h-6 w-6" /> },
@@ -77,7 +87,7 @@ const OrderTracking = () => {
 
     if (!order) return steps;
 
-    const statusMap = {
+    const statusMap: {[key: string]: number} = {
       'pending': 0,
       'processing': 1,
       'shipped': 2,
@@ -85,7 +95,7 @@ const OrderTracking = () => {
       'cancelled': -1
     };
 
-    const currentStatusIndex = statusMap[order.status as keyof typeof statusMap];
+    const currentStatusIndex = statusMap[order.status] ?? 0;
     
     return steps.map((step, index) => ({
       ...step,

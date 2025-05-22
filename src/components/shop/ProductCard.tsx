@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
       name: product.name,
       price: product.price,
       quantity: 1,
-      image: product.images[0] || "https://via.placeholder.com/300x300"
+      image: Array.isArray(product.images) && product.images.length > 0 
+        ? product.images[0] 
+        : "https://via.placeholder.com/300x300"
     });
 
     toast({
@@ -38,12 +39,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
     });
   };
 
+  const productImage = Array.isArray(product.images) && product.images.length > 0 
+    ? product.images[0] 
+    : "https://via.placeholder.com/300x300";
+
   return (
     <Card className="overflow-hidden h-full flex flex-col">
       <Link to={`/product/${product.id}`} className="relative">
         <div className="aspect-square overflow-hidden">
           <img
-            src={product.images[0] || "https://via.placeholder.com/300x300"}
+            src={productImage}
             alt={product.name}
             className="w-full h-full object-cover transition-transform hover:scale-105"
           />
