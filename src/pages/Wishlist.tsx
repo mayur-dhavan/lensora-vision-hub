@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -101,7 +100,7 @@ const Wishlist = () => {
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink as={Link} to="/">
+              <BreadcrumbLink href="/">
                 <Home className="h-4 w-4" />
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -129,7 +128,7 @@ const Wishlist = () => {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">
+            <BreadcrumbLink href="/">
               <Home className="h-4 w-4" />
             </BreadcrumbLink>
           </BreadcrumbItem>
