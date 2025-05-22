@@ -3,79 +3,92 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { toast } from "@/components/ui/use-toast";
-import { Home, Clock, Calendar as CalendarIcon, Check } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Home, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/clerk-react";
-import { format, addDays, setHours, setMinutes, isSameDay, isBefore, addMonths } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+
+const timeSlots = [
+  "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", 
+  "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"
+];
 
 const EyeTest = () => {
   const { user, isSignedIn } = useUser();
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [timeSlot, setTimeSlot] = useState<string | null>(null);
+  const [date, setDate] = useState<Date>();
+  const [timeSlot, setTimeSlot] = useState<string>("");
+  const [testType, setTestType] = useState<string>("comprehensive");
   const [notes, setNotes] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
-
-  // Generate time slots (10 AM to 6 PM with 1-hour intervals)
-  const generateTimeSlots = (selectedDate: Date) => {
-    const slots = [];
-    const startHour = 10; // 10 AM
-    const endHour = 18;   // 6 PM
-    
-    for (let hour = startHour; hour < endHour; hour++) {
-      const slotTime = setMinutes(setHours(new Date(selectedDate), hour), 0);
-      
-      // Don't show past time slots for today
-      if (isSameDay(selectedDate, new Date()) && isBefore(slotTime, new Date())) {
-        continue;
-      }
-      
-      slots.push({
-        time: format(slotTime, "h:mm a"),
-        value: format(slotTime, "HH:mm")
+  const [submitting, setSubmitting] = useState(false);
+  
+  const handleSubmit = async () => {
+    if (!isSignedIn || !user) {
+      toast({
+        title: "Please Sign In",
+        description: "You need to be signed in to book an eye test appointment.",
+        variant: "destructive"
       });
+      return;
     }
-    
-    return slots;
-  };
 
-  const timeSlots = date ? generateTimeSlots(date) : [];
+    if (!date || !timeSlot) {
+      toast({
+        title: "Incomplete Information",
+        description: "Please select a date and time for your appointment.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-  const handleBookAppointment = async () => {
-    if (!isSignedIn || !date || !timeSlot) return;
-    
-    setIsSubmitting(true);
+    setSubmitting(true);
     
     try {
-      // Convert date and time slot to a single timestamp
-      const [hours, minutes] = timeSlot.split(':').map(Number);
-      const appointmentDate = new Date(date);
-      appointmentDate.setHours(hours, minutes, 0, 0);
+      // Combine the date and time slot
+      const [hours, minutes] = timeSlot.split(':');
+      const isPM = timeSlot.includes('PM');
+      let hour = parseInt(hours);
+      if (isPM && hour !== 12) hour += 12;
+      if (!isPM && hour === 12) hour = 0;
       
-      // Insert appointment into database
-      const { data, error } = await supabase
+      const appointmentDate = new Date(date);
+      appointmentDate.setHours(hour);
+      appointmentDate.setMinutes(parseInt(minutes));
+      
+      // Save appointment to Supabase
+      const { error } = await supabase
         .from('appointments')
         .insert({
           user_id: user.id,
           appointment_date: appointmentDate.toISOString(),
-          notes: notes,
-          status: 'scheduled'
+          status: 'scheduled',
+          notes: `Test Type: ${testType}${notes ? `. Notes: ${notes}` : ''}`
         });
-        
+      
       if (error) throw error;
       
       toast({
         title: "Appointment Booked",
-        description: `Your eye test is scheduled for ${format(appointmentDate, "MMMM d, yyyy 'at' h:mm a")}`,
+        description: `Your eye test is scheduled for ${format(appointmentDate, "MMMM d, yyyy 'at' h:mm a")}.`,
       });
       
-      // Reset form and go to confirmation step
-      setStep(3);
+      // Reset form
+      setDate(undefined);
+      setTimeSlot("");
+      setTestType("comprehensive");
+      setNotes("");
+      setStep(1);
+      
     } catch (error) {
       console.error('Error booking appointment:', error);
       toast({
@@ -84,13 +97,8 @@ const EyeTest = () => {
         variant: "destructive"
       });
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
-  };
-
-  const disabledDays = {
-    before: addDays(new Date(), 1),
-    after: addMonths(new Date(), 3),
   };
 
   return (
@@ -99,191 +107,206 @@ const EyeTest = () => {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">
+            <BreadcrumbLink href="/">
               <Home className="h-4 w-4" />
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink>Book Eye Test</BreadcrumbLink>
+            <BreadcrumbLink>Eye Test</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold mb-4">Book Your Eye Test</h1>
-          <p className="text-gray-600">
-            Schedule a comprehensive eye examination with our expert optometrists.
-          </p>
-        </div>
-
-        {/* Booking Form */}
-        <div className="bg-white rounded-lg shadow">
-          {/* Progress Steps */}
-          <div className="border-b">
-            <div className="flex">
-              <div className={`flex-1 text-center p-4 ${step >= 1 ? 'text-primary border-b-2 border-primary' : ''}`}>
-                <span className="font-medium">1. Select Date & Time</span>
+      <h1 className="text-3xl font-bold mb-6">Book an Eye Test</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="md:col-span-2">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 border-b">
+              <div className="flex items-center space-x-4">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  step >= 1 ? "bg-primary text-white" : "bg-gray-200"
+                }`}>
+                  1
+                </div>
+                <h2 className="text-xl font-semibold">Select Appointment Date & Time</h2>
               </div>
-              <div className={`flex-1 text-center p-4 ${step >= 2 ? 'text-primary border-b-2 border-primary' : ''}`}>
-                <span className="font-medium">2. Your Details</span>
-              </div>
-              <div className={`flex-1 text-center p-4 ${step >= 3 ? 'text-primary border-b-2 border-primary' : ''}`}>
-                <span className="font-medium">3. Confirmation</span>
-              </div>
+              
+              {step === 1 && (
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <Label>Select Date</Label>
+                    <div className="border rounded-md">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={setDate}
+                            initialFocus
+                            disabled={(date) => 
+                              date < new Date(new Date().setHours(0, 0, 0, 0)) || // Disable past dates
+                              date > new Date(new Date().setMonth(new Date().getMonth() + 2)) // Allow booking up to 2 months in advance
+                            }
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Label>Select Time</Label>
+                    <div>
+                      <Select value={timeSlot} onValueChange={setTimeSlot}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select time slot" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeSlots.map((slot) => (
+                            <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {date && timeSlot && (
+                      <div className="mt-4 p-3 bg-green-50 text-green-700 rounded-md text-sm">
+                        You've selected an appointment for {format(date, "MMMM d, yyyy")} at {timeSlot}.
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="md:col-span-2 mt-4 flex justify-end">
+                    <Button 
+                      onClick={() => setStep(2)}
+                      disabled={!date || !timeSlot}
+                    >
+                      Continue
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-
-          <div className="p-6">
-            {step === 1 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold mb-4 flex items-center">
-                    <CalendarIcon className="mr-2 h-5 w-5" /> Select a Date
-                  </h2>
-                  <div className="flex justify-center">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      disabled={disabledDays}
-                      className="rounded border"
+            
+            <div className="p-6 border-b">
+              <div className="flex items-center space-x-4">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  step >= 2 ? "bg-primary text-white" : "bg-gray-200"
+                }`}>
+                  2
+                </div>
+                <h2 className="text-xl font-semibold">Additional Information</h2>
+              </div>
+              
+              {step === 2 && (
+                <div className="mt-6 space-y-6">
+                  <div className="space-y-4">
+                    <Label>Type of Eye Test</Label>
+                    <RadioGroup value={testType} onValueChange={setTestType}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="comprehensive" id="comprehensive" />
+                        <Label htmlFor="comprehensive">Comprehensive Eye Exam</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="prescription" id="prescription" />
+                        <Label htmlFor="prescription">Prescription Update</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="contact-lens" id="contact-lens" />
+                        <Label htmlFor="contact-lens">Contact Lens Fitting</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                    <Textarea
+                      id="notes"
+                      placeholder="Any specific concerns or information you'd like to share"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
                     />
                   </div>
-                </div>
-
-                {date && (
-                  <div>
-                    <h2 className="text-xl font-bold mb-4 flex items-center">
-                      <Clock className="mr-2 h-5 w-5" /> Select a Time Slot
-                    </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {timeSlots.map((slot) => (
-                        <button
-                          key={slot.value}
-                          type="button"
-                          className={`p-3 text-center border rounded-md hover:border-primary hover:bg-primary/5 ${
-                            timeSlot === slot.value
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-white"
-                          }`}
-                          onClick={() => setTimeSlot(slot.value)}
-                        >
-                          {slot.time}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-end mt-6">
-                  <Button 
-                    onClick={() => setStep(2)} 
-                    disabled={!date || !timeSlot}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold mb-4">Additional Information</h2>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Do you have any specific concerns or requirements?</Label>
-                      <Textarea
-                        id="notes"
-                        placeholder="E.g., I'm experiencing headaches when reading, I need an updated prescription, etc."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        rows={4}
-                      />
-                    </div>
+                  
+                  <div className="flex justify-between">
+                    <Button variant="outline" onClick={() => setStep(1)}>
+                      Back
+                    </Button>
+                    <Button onClick={handleSubmit} disabled={submitting}>
+                      {submitting ? "Booking..." : "Book Appointment"}
+                    </Button>
                   </div>
                 </div>
-
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h3 className="font-bold mb-2">Appointment Details</h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>Date:</div>
-                    <div className="font-medium">{date ? format(date, "MMMM d, yyyy") : ""}</div>
-                    <div>Time:</div>
-                    <div className="font-medium">
-                      {timeSlot ? format(setHours(new Date(), parseInt(timeSlot.split(':')[0])), "h:mm a") : ""}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between mt-6">
-                  <Button variant="outline" onClick={() => setStep(1)}>
-                    Back
-                  </Button>
-                  <Button 
-                    onClick={handleBookAppointment}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Booking..." : "Confirm Booking"}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="text-center py-8">
-                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                  <Check className="h-8 w-8 text-green-600" />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">Appointment Confirmed!</h2>
-                <p className="text-gray-600 mb-6">
-                  Your eye test has been scheduled for {date ? format(date, "MMMM d, yyyy") : ""} at{" "}
-                  {timeSlot ? format(setHours(new Date(), parseInt(timeSlot.split(':')[0])), "h:mm a") : ""}.
-                </p>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-500">
-                    Please arrive 10 minutes before your appointment. You will receive a confirmation email with more details.
-                  </p>
-                  <Button asChild>
-                    <Link to="/profile">View in My Appointments</Link>
-                  </Button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Info Section */}
-        {step !== 3 && (
-          <div className="mt-12 grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-2">What to Expect</h3>
-                <p className="text-gray-600 text-sm">
-                  Our comprehensive eye test takes approximately 30 minutes and includes vision assessment, eye health check, and personalized recommendations.
+        
+        <div>
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold mb-4">About Our Eye Tests</h3>
+              
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h4 className="font-semibold">Comprehensive Eye Exam</h4>
+                  <p className="text-gray-600">
+                    A thorough examination of your eye health and vision, including tests for glaucoma, 
+                    cataracts, and other eye conditions.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold">Prescription Update</h4>
+                  <p className="text-gray-600">
+                    A quick check to update your current prescription for glasses or contact lenses.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold">Contact Lens Fitting</h4>
+                  <p className="text-gray-600">
+                    Specialized assessment to determine the right contact lens prescription and fit for your eyes.
+                  </p>
+                </div>
+                
+                <div className="pt-4 border-t">
+                  <h4 className="font-semibold">Duration</h4>
+                  <p className="text-gray-600">30-45 minutes depending on the test type</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold">What to Bring</h4>
+                  <ul className="list-disc pl-5 text-gray-600">
+                    <li>Current glasses or contact lenses</li>
+                    <li>List of current medications</li>
+                    <li>Previous prescription (if available)</li>
+                    <li>Health insurance information (if applicable)</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t">
+                <p className="text-sm text-gray-500">
+                  Need to reschedule? Contact us at least 24 hours before your appointment.
                 </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-2">Bring with You</h3>
-                <p className="text-gray-600 text-sm">
-                  Please bring your current eyeglasses or contact lenses, and any eye medication you may be using.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-2">Cancellation Policy</h3>
-                <p className="text-gray-600 text-sm">
-                  You can reschedule or cancel your appointment up to 24 hours before your scheduled time without any charge.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

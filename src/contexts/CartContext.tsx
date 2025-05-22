@@ -1,31 +1,18 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  category: string;
-  description: string;
-  stock: number;
-}
-
-export interface CartItem extends Product {
-  quantity: number;
-}
+import { CartItem } from "@/types";
 
 interface CartContextType {
-  cartItems: CartItem[];
-  addToCart: (product: Product) => void;
+  items: CartItem[];
+  addToCart: (product: CartItem) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
-  totalPrice: number;
+  totalAmount: number;
 }
 
-export const CartContext = createContext<CartContextType | null>(null);
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const useCart = () => {
   const context = useContext(CartContext);
@@ -38,16 +25,16 @@ export const useCart = () => {
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ 
   children 
 }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
     const storedCart = localStorage.getItem("lensora-cart");
     if (storedCart) {
       try {
         const parsedCart = JSON.parse(storedCart);
-        setCartItems(parsedCart);
+        setItems(parsedCart);
       } catch (error) {
         console.error("Failed to parse cart from localStorage:", error);
       }
@@ -56,22 +43,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     // Save cart to localStorage whenever it changes
-    if (cartItems.length > 0) {
-      localStorage.setItem("lensora-cart", JSON.stringify(cartItems));
+    if (items.length > 0) {
+      localStorage.setItem("lensora-cart", JSON.stringify(items));
     } else {
       localStorage.removeItem("lensora-cart");
     }
 
     // Calculate total items and price
-    const items = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    const price = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+    const amount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    setTotalItems(items);
-    setTotalPrice(price);
-  }, [cartItems]);
+    setTotalItems(itemCount);
+    setTotalAmount(amount);
+  }, [items]);
 
-  const addToCart = (product: Product) => {
-    setCartItems(prevItems => {
+  const addToCart = (product: CartItem) => {
+    setItems(prevItems => {
       // Check if item already exists in cart
       const existingItem = prevItems.find(item => item.id === product.id);
       
@@ -85,19 +72,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         return updatedItems;
       } else {
         // Add new item with quantity 1
-        return [...prevItems, { ...product, quantity: 1 }];
+        return [...prevItems, product];
       }
     });
   };
 
   const removeFromCart = (productId: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+    setItems(prevItems => prevItems.filter(item => item.id !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return; // Don't allow quantities less than 1
     
-    setCartItems(prevItems => 
+    setItems(prevItems => 
       prevItems.map(item => 
         item.id === productId 
           ? { ...item, quantity } 
@@ -107,20 +94,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const clearCart = () => {
-    setCartItems([]);
+    setItems([]);
     localStorage.removeItem("lensora-cart");
   };
 
   return (
     <CartContext.Provider 
       value={{ 
-        cartItems, 
+        items, 
         addToCart, 
         removeFromCart, 
         updateQuantity,
         clearCart,
         totalItems,
-        totalPrice
+        totalAmount
       }}
     >
       {children}

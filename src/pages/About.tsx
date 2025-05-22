@@ -1,8 +1,7 @@
 
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Home, Eye, ShoppingBag, Calendar, Check } from "lucide-react";
+import { Home } from "lucide-react";
 
 const About = () => {
   return (
@@ -11,7 +10,7 @@ const About = () => {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">
+            <BreadcrumbLink href="/">
               <Home className="h-4 w-4" />
             </BreadcrumbLink>
           </BreadcrumbItem>
@@ -22,161 +21,129 @@ const About = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Hero Section */}
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">About Lensora</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          We are dedicated to providing premium eyewear and exceptional eye care services to customers throughout India.
-        </p>
-      </div>
-
-      {/* Our Story */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
+      <h1 className="text-3xl font-bold mb-6">About LensHub Eyewear</h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12">
         <div>
+          <h2 className="text-2xl font-semibold mb-4">Our Story</h2>
+          <p className="mb-4">
+            Founded in 2010, LensHub Eyewear started as a small family-owned optical store in Sinhgad College Road, Pune. 
+            Our passion for quality eyewear and personalized customer service quickly made us a favorite among locals.
+          </p>
+          <p className="mb-4">
+            Over the years, we've grown to become one of the most trusted eyewear retailers in Pune, known for our 
+            extensive collection of prescription glasses, sunglasses, and contact lenses from leading brands around the world.
+          </p>
+          <p>
+            In 2023, we launched our online store to bring the LensHub experience to customers beyond our physical location, 
+            while maintaining the same level of quality and service that has defined us for over a decade.
+          </p>
+        </div>
+        <div className="rounded-lg overflow-hidden h-[400px]">
           <img 
-            src="https://images.unsplash.com/photo-1582142839970-2b3dbfab7512?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
-            alt="Our store" 
-            className="rounded-lg shadow-lg"
+            src="https://images.unsplash.com/photo-1582142407894-ec8cecd358b5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+            alt="LensHub Eyewear store"
+            className="w-full h-full object-cover"
           />
         </div>
-        <div>
-          <h2 className="text-3xl font-bold mb-4">Our Story</h2>
-          <p className="mb-4 text-gray-700">
-            LensHub Eyewear was founded in 2010 with a simple mission: to provide high-quality eyewear at reasonable prices, paired with exceptional customer service and professional eye care.
-          </p>
-          <p className="mb-4 text-gray-700">
-            Starting as a small optical shop in Pune, we've grown into a trusted name in the eyewear industry, serving thousands of satisfied customers across the region.
-          </p>
-          <p className="text-gray-700">
-            Our journey has been guided by our commitment to eye health, style, and customer satisfaction. We believe that quality eyewear isn't just about improving vision—it's about enhancing life.
+      </div>
+      
+      <div className="mb-12">
+        <h2 className="text-2xl font-semibold mb-6 text-center">Our Mission</h2>
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xl italic">
+            "To provide high-quality, stylish eyewear that enhances vision and confidence, 
+            backed by exceptional customer service and expert eye care advice."
           </p>
         </div>
       </div>
-
-      {/* Our Values */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold mb-8 text-center">Our Values</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <div className="bg-primary/10 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-              <Eye className="text-primary h-6 w-6" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Expert Care</h3>
-            <p className="text-gray-600">
-              We prioritize the health of your eyes with comprehensive examinations and personalized care from our experienced optometrists.
-            </p>
+      
+      <div className="bg-gray-50 p-8 rounded-lg mb-12">
+        <h2 className="text-2xl font-semibold mb-6 text-center">Why Choose LensHub?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+            <div className="text-primary text-xl font-bold mb-3">Quality Products</div>
+            <p>We curate our collection from reputable brands known for durability and style.</p>
           </div>
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <div className="bg-primary/10 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-              <ShoppingBag className="text-primary h-6 w-6" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Quality Products</h3>
-            <p className="text-gray-600">
-              We source our frames and lenses from trusted manufacturers who share our commitment to quality and durability.
-            </p>
+          <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+            <div className="text-primary text-xl font-bold mb-3">Expert Advice</div>
+            <p>Our team of licensed optometrists ensures you get the perfect eyewear for your needs.</p>
           </div>
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <div className="bg-primary/10 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-              <Calendar className="text-primary h-6 w-6" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Personalized Service</h3>
-            <p className="text-gray-600">
-              We believe in treating each customer as an individual, offering personalized recommendations based on your unique needs.
-            </p>
+          <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+            <div className="text-primary text-xl font-bold mb-3">After-Sales Support</div>
+            <p>From adjustments to repairs, we're here to keep your eyewear in perfect condition.</p>
           </div>
         </div>
       </div>
-
-      {/* Our Team */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold mb-8 text-center">Meet Our Team</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      
+      <div className="mb-12">
+        <h2 className="text-2xl font-semibold mb-6">Our Team</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="text-center">
-            <img 
-              src="https://randomuser.me/api/portraits/men/32.jpg" 
-              alt="Dr. Rahul Sharma" 
-              className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-            />
-            <h3 className="text-xl font-bold">Dr. Rahul Sharma</h3>
-            <p className="text-gray-600">Chief Optometrist</p>
+            <div className="mb-3 mx-auto h-40 w-40 rounded-full overflow-hidden">
+              <img 
+                src="https://randomuser.me/api/portraits/men/32.jpg"
+                alt="Dr. Rajesh Sharma"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <h3 className="font-semibold text-lg">Dr. Rajesh Sharma</h3>
+            <p className="text-gray-500">Founder & Chief Optometrist</p>
           </div>
           <div className="text-center">
-            <img 
-              src="https://randomuser.me/api/portraits/women/44.jpg" 
-              alt="Priya Singh" 
-              className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-            />
-            <h3 className="text-xl font-bold">Priya Singh</h3>
-            <p className="text-gray-600">Store Manager</p>
+            <div className="mb-3 mx-auto h-40 w-40 rounded-full overflow-hidden">
+              <img 
+                src="https://randomuser.me/api/portraits/women/44.jpg"
+                alt="Dr. Priya Agarwal"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <h3 className="font-semibold text-lg">Dr. Priya Agarwal</h3>
+            <p className="text-gray-500">Senior Optometrist</p>
           </div>
           <div className="text-center">
-            <img 
-              src="https://randomuser.me/api/portraits/men/26.jpg" 
-              alt="Vikram Patel" 
-              className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-            />
-            <h3 className="text-xl font-bold">Vikram Patel</h3>
-            <p className="text-gray-600">Customer Experience</p>
+            <div className="mb-3 mx-auto h-40 w-40 rounded-full overflow-hidden">
+              <img 
+                src="https://randomuser.me/api/portraits/men/62.jpg"
+                alt="Vikram Patel"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <h3 className="font-semibold text-lg">Vikram Patel</h3>
+            <p className="text-gray-500">Store Manager</p>
           </div>
         </div>
       </div>
-
-      {/* Why Choose Us */}
-      <div className="bg-gray-50 p-8 rounded-lg mb-16">
-        <h2 className="text-3xl font-bold mb-8 text-center">Why Choose Lensora?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 mr-4">
-              <Check className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-bold mb-1">Wide Selection</h3>
-              <p className="text-gray-600">From designer frames to budget-friendly options, we have eyewear for every style and need.</p>
-            </div>
+      
+      <div>
+        <h2 className="text-2xl font-semibold mb-6">Visit Our Store</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <p className="mb-4">
+              <strong>Address:</strong><br />
+              LensHub Eyewear<br />
+              Opposite Bank Of Maharashtra,<br />
+              Sinhgad College Road, Pune, Maharashtra, 411041
+            </p>
+            <p className="mb-4">
+              <strong>Hours:</strong><br />
+              Monday - Saturday: 10:00 AM - 8:00 PM<br />
+              Sunday: 11:00 AM - 6:00 PM
+            </p>
+            <p className="mb-4">
+              <strong>Contact:</strong><br />
+              Phone: +91 98765 43210<br />
+              Email: info@lenshubeywear.com
+            </p>
           </div>
-          <div className="flex items-start">
-            <div className="flex-shrink-0 mr-4">
-              <Check className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-bold mb-1">Comprehensive Eye Exams</h3>
-              <p className="text-gray-600">Our thorough eye exams ensure your prescription is accurate and your eyes are healthy.</p>
-            </div>
+          <div className="h-[300px] rounded-lg overflow-hidden">
+            <iframe
+              title="LensHub Eyewear Location"
+              className="w-full h-full"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3784.5722767083785!2d73.8256442!3d18.4577875!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTjCsDI3JzI4LjAiTiA3M8KwNDknMzIuMyJF!5e0!3m2!1sen!2sin!4v1621422833651!5m2!1sen!2sin"
+              loading="lazy"
+            ></iframe>
           </div>
-          <div className="flex items-start">
-            <div className="flex-shrink-0 mr-4">
-              <Check className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-bold mb-1">Expert Fitting</h3>
-              <p className="text-gray-600">We ensure your frames fit perfectly for both comfort and optical performance.</p>
-            </div>
-          </div>
-          <div className="flex items-start">
-            <div className="flex-shrink-0 mr-4">
-              <Check className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-bold mb-1">After-Sales Service</h3>
-              <p className="text-gray-600">We provide adjustments, repairs, and warranties to keep your eyewear in perfect condition.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Call to Action */}
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-4">Ready to Experience Lensora?</h2>
-        <p className="mb-6 text-gray-600">
-          Visit our store or shop online for the latest eyewear collections and professional eye care services.
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Button asChild>
-            <Link to="/shop">Shop Now</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/eye-test">Book Eye Test</Link>
-          </Button>
         </div>
       </div>
     </div>

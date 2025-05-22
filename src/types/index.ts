@@ -35,8 +35,12 @@ export interface Address {
   street: string;
   city: string;
   state: string;
-  postalCode: string;
+  postal_code: string;
   country: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface UserProfile {

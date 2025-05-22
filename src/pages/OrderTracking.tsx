@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -50,7 +49,12 @@ const OrderTracking = () => {
 
         if (itemsError) throw itemsError;
 
-        setOrder({ ...orderData, items: itemsData as any });
+        const typedOrderData = {
+          ...orderData,
+          status: orderData.status as Order['status'] // Type assertion
+        };
+        
+        setOrder({ ...typedOrderData, items: itemsData as any });
 
       } catch (err: any) {
         console.error('Error fetching order:', err);
@@ -124,13 +128,13 @@ const OrderTracking = () => {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">
+            <BreadcrumbLink href="/">
               <Home className="h-4 w-4" />
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/profile">My Account</BreadcrumbLink>
+            <BreadcrumbLink href="/profile">My Account</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

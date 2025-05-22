@@ -6,16 +6,7 @@ import { ShoppingCart, Heart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import { formatCurrency } from "@/lib/utils";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  images: string[];
-  stock: number;
-}
+import { Product } from "@/types";
 
 interface ProductCardProps {
   product: Product;
