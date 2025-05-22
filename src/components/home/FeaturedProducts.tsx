@@ -1,110 +1,136 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "@/components/ui/use-toast";
 
-// We'll need a simplified version without the useCart hook for now
-// Mock featured products data
-const mockProducts = [
+// Mock products data (in a real app, this would come from an API)
+const products = [
   {
     id: "1",
-    name: "Avant-Garde Round",
-    price: 129,
-    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
+    name: "Ray-Ban Classic Aviator",
+    price: 159.99,
+    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
     category: "sunglasses",
-    description: "Classic round frames with a modern twist, perfect for everyday wear.",
+    description: "Iconic aviator sunglasses that provide 100% UV protection with polarized lenses.",
     stock: 15
   },
   {
     id: "2",
-    name: "Crystal Aviator",
-    price: 149,
-    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
-    category: "sunglasses",
-    description: "Iconic aviator shape with crystal clear lenses and gold-tone frames.",
+    name: "Warby Parker Round",
+    price: 145.00,
+    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    category: "prescription",
+    description: "Stylish round frames made from premium acetate with prescription-ready lenses.",
     stock: 8
   },
   {
     id: "3",
-    name: "Modern Rectangle",
-    price: 169,
-    image: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
-    category: "prescription",
-    description: "Contemporary rectangular frames with spring hinges for extra comfort.",
-    stock: 12
+    name: "Oakley Sport Wrap",
+    price: 189.00,
+    image: "https://images.unsplash.com/photo-1608539733412-77361e942bae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    category: "sunglasses",
+    description: "Durable sports sunglasses with impact-resistant lenses and secure fit.",
+    stock: 10
   },
   {
     id: "4",
-    name: "Retro Clubmaster",
-    price: 159,
-    image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
+    name: "Gucci Cat-Eye",
+    price: 329.99,
+    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
     category: "sunglasses",
-    description: "Vintage-inspired browline frames with polarized lenses for maximum UV protection.",
-    stock: 7
+    description: "Elegant cat-eye frames with designer details and gradient lenses.",
+    stock: 5
   }
 ];
 
-// Simple ProductCard component
-const ProductCard = ({ product }) => {
-  return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 product-card-shadow group">
-      <div className="relative overflow-hidden aspect-square">
-        <Link to={`/product/${product.id}`}>
-          <img 
-            src={product.image} 
-            alt={product.name} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        </Link>
-      </div>
-      
-      <div className="p-4">
-        <Link to={`/product/${product.id}`}>
-          <h3 className="text-lg font-medium text-gray-900 mb-1 hover:text-navy-600 transition-colors">
-            {product.name}
-          </h3>
-        </Link>
-        <p className="text-sm text-gray-500 mb-2">{product.category.charAt(0).toUpperCase() + product.category.slice(1)}</p>
-        <div className="font-semibold">${product.price}</div>
-      </div>
-    </div>
-  );
-};
-
 const FeaturedProducts = () => {
-  const [products, setProducts] = useState([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const { addToCart } = useCart();
 
-  useEffect(() => {
-    // In a real app, we would fetch from an API
-    setProducts(mockProducts);
-  }, []);
+  const toggleWishlist = (productId: string) => {
+    setWishlist(prev => {
+      if (prev.includes(productId)) {
+        return prev.filter(id => id !== productId);
+      } else {
+        toast({
+          title: "Added to Wishlist",
+          description: "Item has been added to your wishlist"
+        });
+        return [...prev, productId];
+      }
+    });
+  };
+
+  const handleAddToCart = (product: typeof products[0]) => {
+    addToCart(product);
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart`
+    });
+  };
 
   return (
-    <section className="py-16 md:py-24 bg-white">
+    <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">
-            Featured Products
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover our most popular styles and bestsellers
+          <h2 className="text-3xl font-bold mb-2">Featured Products</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Discover our most popular eyewear picks, chosen for style, comfort and quality
           </p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <Card key={product.id} className="overflow-hidden border-0 shadow-md">
+              <div className="relative group">
+                <Link to={`/product/${product.id}`}>
+                  <div className="h-64 overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                </Link>
+                <button 
+                  className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
+                  onClick={() => toggleWishlist(product.id)}
+                >
+                  <Heart 
+                    className={`h-5 w-5 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} 
+                  />
+                </button>
+              </div>
+              
+              <CardContent className="p-4">
+                <Link to={`/product/${product.id}`}>
+                  <h3 className="font-semibold text-lg hover:text-primary transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
+                <p className="font-medium text-lg mt-2">${product.price.toFixed(2)}</p>
+              </CardContent>
+              
+              <CardFooter className="p-4 pt-0">
+                <Button 
+                  onClick={() => handleAddToCart(product)} 
+                  className="w-full"
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                </Button>
+              </CardFooter>
+            </Card>
           ))}
         </div>
         
-        <div className="text-center mt-12">
-          <Link to="/shop">
-            <Button className="bg-navy-800 hover:bg-navy-700">
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              View All Products
-            </Button>
-          </Link>
+        <div className="text-center mt-10">
+          <Button asChild variant="outline" size="lg">
+            <Link to="/shop">View All Products</Link>
+          </Button>
         </div>
       </div>
     </section>

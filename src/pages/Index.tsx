@@ -1,6 +1,12 @@
 
 import { useEffect } from "react";
-import BenefitsSection from "../components/home/BenefitsSection";
+import Hero from "@/components/home/Hero";
+import FeaturedProducts from "@/components/home/FeaturedProducts";
+import CategoryHighlights from "@/components/home/CategoryHighlights";
+import BenefitsSection from "@/components/home/BenefitsSection";
+import TestimonialsSection from "@/components/home/TestimonialsSection";
+import EyeTestCTA from "@/components/home/EyeTestCTA";
+import NewsletterSignup from "@/components/home/NewsletterSignup";
 
 const Index = () => {
   useEffect(() => {
@@ -9,11 +15,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-4xl font-bold mb-6">Welcome to Lensora</h1>
-        <p className="text-xl mb-12">Your premier destination for quality eyewear</p>
-      </div>
+      <Hero />
+      <CategoryHighlights />
+      <FeaturedProducts />
       <BenefitsSection />
+      <TestimonialsSection />
+      <EyeTestCTA />
+      <NewsletterSignup />
     </div>
   );
 };
