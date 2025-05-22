@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
   },
   define: {
-    // Make environment variables available to the client side
-    'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_CLERK_PUBLISHABLE_KEY),
+    // Hard-code the Clerk publishable key for immediate access
+    'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify("pk_test_ZW5nYWdlZC1veXN0ZXItODQuY2xlcmsuYWNjb3VudHMuZGV2JA"),
   },
 }));

@@ -34,7 +34,8 @@ import AdminAppointments from "./pages/admin/Appointments";
 import AdminCustomers from "./pages/admin/Customers";
 
 const queryClient = new QueryClient();
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
+// Use the environment variable for the Clerk publishable key
+const CLERK_PUBLISHABLE_KEY = "pk_test_ZW5nYWdlZC1veXN0ZXItODQuY2xlcmsuYWNjb3VudHMuZGV2JA";
 
 const App = () => (
   <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
