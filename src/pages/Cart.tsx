@@ -8,7 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/utils";
 
 const Cart = () => {
-  const { items, updateQuantity, removeFromCart, totalAmount, totalItems } = useCart();
+  const { items, updateQuantity, removeFromCart, total, totalItems } = useCart();
 
   if (totalItems === 0) {
     return (
@@ -142,7 +142,7 @@ const Cart = () => {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
                 <span>Subtotal ({totalItems} items)</span>
-                <span>{formatCurrency(totalAmount)}</span>
+                <span>{formatCurrency(total)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
@@ -150,7 +150,7 @@ const Cart = () => {
               </div>
               <div className="border-t pt-2 mt-2 font-bold flex justify-between">
                 <span>Total</span>
-                <span>{formatCurrency(totalAmount)}</span>
+                <span>{formatCurrency(total)}</span>
               </div>
             </div>
 
