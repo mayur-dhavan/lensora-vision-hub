@@ -71,17 +71,15 @@ const Checkout = () => {
 
     setLoading(true);
     try {
-      // Create order
+      // Create order - convert Address to Json format
       const { data: order, error: orderError } = await supabase
         .from("orders")
-        .insert([
-          {
-            user_id: user.id,
-            status: "pending",
-            total: total,
-            shipping_address: selectedAddress,
-          },
-        ])
+        .insert({
+          user_id: user.id,
+          status: "pending",
+          total: total,
+          shipping_address: selectedAddress as any, // Convert to Json
+        })
         .select()
         .single();
 
@@ -101,17 +99,8 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
-      // Update product stock
-      for (const item of items) {
-        const { error: stockError } = await supabase.rpc("update_product_stock", {
-          product_id: item.id,
-          quantity_sold: item.quantity,
-        });
-        
-        if (stockError) {
-          console.error("Error updating stock:", stockError);
-        }
-      }
+      // Note: Removed the update_product_stock call as the function doesn't exist in the database
+      // This would need to be implemented as a proper database function first
 
       clearCart();
       toast({

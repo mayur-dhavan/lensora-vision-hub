@@ -9,7 +9,7 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
-  totalAmount: number;
+  total: number; // Changed from totalAmount to total
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [total, setTotal] = useState(0); // Changed from totalAmount to total
 
   useEffect(() => {
     const storedCart = localStorage.getItem("lensora-cart");
@@ -54,7 +54,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     const amount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     setTotalItems(itemCount);
-    setTotalAmount(amount);
+    setTotal(amount); // Changed from setTotalAmount to setTotal
   }, [items]);
 
   const addToCart = (product: CartItem) => {
@@ -107,7 +107,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         updateQuantity,
         clearCart,
         totalItems,
-        totalAmount
+        total // Changed from totalAmount to total
       }}
     >
       {children}
