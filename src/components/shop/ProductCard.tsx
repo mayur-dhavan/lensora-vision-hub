@@ -1,3 +1,5 @@
+
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +8,8 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { Product } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@clerk/clerk-react";
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +17,9 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { user } = useUser();
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const handleAddToCart = () => {
     addToCart({
@@ -31,12 +38,60 @@ const ProductCard = ({ product }: ProductCardProps) => {
     });
   };
 
-  const handleAddToWishlist = () => {
-    // This will be implemented when we add wishlist functionality
-    toast({
-      title: "Added to wishlist",
-      description: `${product.name} has been added to your wishlist.`
-    });
+  const handleWishlistToggle = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add items to your wishlist.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setWishlistLoading(true);
+    try {
+      if (isInWishlist) {
+        // Remove from wishlist
+        const { error } = await supabase
+          .from('wishlists')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('product_id', product.id);
+
+        if (error) throw error;
+        
+        setIsInWishlist(false);
+        toast({
+          title: "Removed from wishlist",
+          description: `${product.name} has been removed from your wishlist.`
+        });
+      } else {
+        // Add to wishlist
+        const { error } = await supabase
+          .from('wishlists')
+          .insert({
+            user_id: user.id,
+            product_id: product.id
+          });
+
+        if (error) throw error;
+        
+        setIsInWishlist(true);
+        toast({
+          title: "Added to wishlist",
+          description: `${product.name} has been added to your wishlist.`
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update wishlist. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setWishlistLoading(false);
+    }
   };
 
   const productImage = Array.isArray(product.images) && product.images.length > 0 
@@ -53,6 +108,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
             className="w-full h-full object-cover transition-transform hover:scale-105"
           />
         </div>
+        {product.stock <= 0 && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <span className="text-white font-semibold">Out of Stock</span>
+          </div>
+        )}
       </Link>
       <CardContent className="pt-4 flex-grow">
         <Link to={`/product/${product.id}`}>
@@ -62,6 +122,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </Link>
         <div className="text-gray-500 text-sm mt-1">{product.category}</div>
         <div className="mt-2 font-bold text-lg">{formatCurrency(product.price)}</div>
+        {product.sku && (
+          <div className="text-xs text-gray-400 mt-1">SKU: {product.sku}</div>
+        )}
       </CardContent>
       <CardFooter className="border-t pt-4">
         <div className="flex w-full gap-2">
@@ -76,9 +139,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <Button
             variant="outline"
             size="icon"
-            onClick={handleAddToWishlist}
+            onClick={handleWishlistToggle}
+            disabled={wishlistLoading}
+            className={isInWishlist ? "text-red-500 border-red-500" : ""}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className={`h-4 w-4 ${isInWishlist ? "fill-current" : ""}`} />
           </Button>
         </div>
       </CardFooter>

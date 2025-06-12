@@ -9,31 +9,100 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string
+          country: string
+          created_at: string | null
+          first_name: string
+          id: string
+          is_default: boolean | null
+          last_name: string
+          phone: string | null
+          postal_code: string
+          state: string
+          street: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          city: string
+          country?: string
+          created_at?: string | null
+          first_name: string
+          id?: string
+          is_default?: boolean | null
+          last_name: string
+          phone?: string | null
+          postal_code: string
+          state: string
+          street: string
+          type?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string | null
+          first_name?: string
+          id?: string
+          is_default?: boolean | null
+          last_name?: string
+          phone?: string | null
+          postal_code?: string
+          state?: string
+          street?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_date: string
+          appointment_type: string | null
+          contact_number: string | null
           created_at: string | null
+          duration: number | null
           id: string
           notes: string | null
+          patient_age: number | null
+          patient_name: string | null
           status: string | null
+          symptoms: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           appointment_date: string
+          appointment_type?: string | null
+          contact_number?: string | null
           created_at?: string | null
+          duration?: number | null
           id?: string
           notes?: string | null
+          patient_age?: number | null
+          patient_name?: string | null
           status?: string | null
+          symptoms?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           appointment_date?: string
+          appointment_type?: string | null
+          contact_number?: string | null
           created_at?: string | null
+          duration?: number | null
           id?: string
           notes?: string | null
+          patient_age?: number | null
+          patient_name?: string | null
           status?: string | null
+          symptoms?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -112,32 +181,41 @@ export type Database = {
       }
       orders: {
         Row: {
+          courier_partner: string | null
           created_at: string | null
+          estimated_delivery_date: string | null
           id: string
           payment_intent: string | null
           shipping_address: Json
           status: string | null
           total: number
+          tracking_id: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          courier_partner?: string | null
           created_at?: string | null
+          estimated_delivery_date?: string | null
           id?: string
           payment_intent?: string | null
           shipping_address: Json
           status?: string | null
           total: number
+          tracking_id?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          courier_partner?: string | null
           created_at?: string | null
+          estimated_delivery_date?: string | null
           id?: string
           payment_intent?: string | null
           shipping_address?: Json
           status?: string | null
           total?: number
+          tracking_id?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -156,37 +234,58 @@ export type Database = {
           category: string
           created_at: string | null
           description: string
+          dimensions: Json | null
           featured: boolean | null
           id: string
           images: Json
+          low_stock_threshold: number | null
+          meta_description: string | null
+          meta_title: string | null
           name: string
           price: number
+          sku: string | null
+          slug: string | null
           stock: number
           updated_at: string | null
+          weight: number | null
         }
         Insert: {
           category: string
           created_at?: string | null
           description: string
+          dimensions?: Json | null
           featured?: boolean | null
           id?: string
           images?: Json
+          low_stock_threshold?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
           name: string
           price: number
+          sku?: string | null
+          slug?: string | null
           stock?: number
           updated_at?: string | null
+          weight?: number | null
         }
         Update: {
           category?: string
           created_at?: string | null
           description?: string
+          dimensions?: Json | null
           featured?: boolean | null
           id?: string
           images?: Json
+          low_stock_threshold?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
           name?: string
           price?: number
+          sku?: string | null
+          slug?: string | null
           stock?: number
           updated_at?: string | null
+          weight?: number | null
         }
         Relationships: []
       }
@@ -339,7 +438,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_slug: {
+        Args: { name: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

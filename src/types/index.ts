@@ -11,6 +11,17 @@ export interface Product {
   featured?: boolean;
   created_at?: string;
   updated_at?: string;
+  low_stock_threshold?: number;
+  sku?: string;
+  weight?: number;
+  dimensions?: {
+    length?: number;
+    width?: number;
+    height?: number;
+  };
+  meta_title?: string;
+  meta_description?: string;
+  slug?: string;
 }
 
 export interface Category {
@@ -30,19 +41,25 @@ export interface CartItem {
   image?: string;
 }
 
-// User related types
+// Address related types
 export interface Address {
+  id?: string;
+  user_id?: string;
+  type: 'shipping' | 'billing';
+  first_name: string;
+  last_name: string;
+  phone?: string;
   street: string;
   city: string;
   state: string;
   postal_code: string;
   country: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
+  is_default?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// User related types
 export interface UserProfile {
   id: string;
   email: string;
@@ -68,10 +85,13 @@ export interface OrderItem {
 export interface Order {
   id: string;
   user_id: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | string; // Allow string to handle any value from DB
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | string;
   total: number;
-  shipping_address: Address | any; // Handle both Address and Json from Supabase
+  shipping_address: Address | any;
   payment_intent?: string;
+  tracking_id?: string;
+  estimated_delivery_date?: string;
+  courier_partner?: string;
   created_at?: string;
   updated_at?: string;
   items?: OrderItem[];
@@ -82,7 +102,13 @@ export interface Appointment {
   id: string;
   user_id: string;
   appointment_date: string;
-  status: 'scheduled' | 'completed' | 'cancelled' | string; // Allow string to handle any value from DB
+  appointment_type?: string;
+  duration?: number;
+  patient_name?: string;
+  patient_age?: number;
+  contact_number?: string;
+  symptoms?: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | string;
   notes?: string;
   created_at?: string;
   updated_at?: string;

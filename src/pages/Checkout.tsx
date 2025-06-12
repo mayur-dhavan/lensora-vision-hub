@@ -1,394 +1,371 @@
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { toast } from "@/components/ui/use-toast";
-import { Home, CreditCard, ShoppingCart } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
-import { formatCurrency } from "@/lib/utils";
 import { useUser } from "@clerk/clerk-react";
+import { toast } from "@/components/ui/use-toast";
+import { formatCurrency } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { Address } from "@/types";
+import { Truck, CreditCard, MapPin } from "lucide-react";
+import SEOHead from "@/components/seo/SEOHead";
 
 const Checkout = () => {
-  const { items, totalAmount, clearCart } = useCart();
+  const { cart, getTotalPrice, clearCart } = useCart();
   const { user } = useUser();
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [newAddress, setNewAddress] = useState<Partial<Address>>({
+    type: 'shipping',
+    first_name: '',
+    last_name: '',
+    phone: '',
+    street: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: 'India'
+  });
 
-  // Form states
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
-  const [step, setStep] = useState(1);
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    if (cart.length === 0) {
+      navigate('/cart');
+      return;
+    }
 
-  const handleSubmitShipping = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep(2);
+    fetchAddresses();
+  }, [user, cart, navigate]);
+
+  const fetchAddresses = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false });
+
+      if (error) throw error;
+      
+      setAddresses(data || []);
+      if (data && data.length > 0) {
+        setSelectedAddress(data[0].id!);
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+    }
   };
 
-  const handleSubmitPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
+  const calculateTotal = () => {
+    const subtotal = getTotalPrice();
+    const tax = subtotal * 0.18; // 18% GST
+    const shipping = subtotal >= 1000 ? 0 : 50; // Free shipping above ₹1000
+    return {
+      subtotal,
+      tax,
+      shipping,
+      total: subtotal + tax + shipping
+    };
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!user) return;
+
+    const shippingAddress = selectedAddress 
+      ? addresses.find(addr => addr.id === selectedAddress)
+      : newAddress;
+
+    if (!shippingAddress || !shippingAddress.street) {
       toast({
-        title: "Error",
-        description: "You must be logged in to place an order",
+        title: "Address Required",
+        description: "Please select or add a shipping address.",
         variant: "destructive"
       });
       return;
     }
-    
-    if (items.length === 0) {
-      toast({
-        title: "Error",
-        description: "Your cart is empty",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+
+    setLoading(true);
     try {
-      // Create the order
-      const { data: orderData, error: orderError } = await supabase
+      const totals = calculateTotal();
+
+      // Create order
+      const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
-          status: 'pending',
-          total: totalAmount,
-          shipping_address: {
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-            phone: phone,
-            street: address,
-            city: city,
-            state: state,
-            postal_code: postalCode
-          },
-          payment_intent: `demo_${Date.now()}`
+          total: totals.total,
+          shipping_address: shippingAddress,
+          status: 'pending'
         })
         .select()
         .single();
-        
+
       if (orderError) throw orderError;
-      
-      // Add order items
-      const orderItems = items.map(item => ({
-        order_id: orderData.id,
+
+      // Create order items
+      const orderItems = cart.map(item => ({
+        order_id: order.id,
         product_id: item.id,
         quantity: item.quantity,
         price: item.price
       }));
-      
+
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
-        
+
       if (itemsError) throw itemsError;
-      
-      // Show success message
-      toast({
-        title: "Order Placed Successfully",
-        description: "Thank you for your order!"
-      });
-      
-      // Clear cart and redirect to confirmation
+
+      // Update product stock
+      for (const item of cart) {
+        const { error: stockError } = await supabase.rpc('update_product_stock', {
+          product_id: item.id,
+          quantity_sold: item.quantity
+        });
+        
+        if (stockError) {
+          console.error('Error updating stock:', stockError);
+        }
+      }
+
       clearCart();
-      navigate(`/order/${orderData.id}`);
-      
-    } catch (error) {
-      console.error('Error creating order:', error);
       toast({
-        title: "Error",
+        title: "Order Placed Successfully!",
+        description: `Your order #${order.id.slice(0, 8)} has been placed. You will pay ₹${totals.total.toFixed(2)} on delivery.`
+      });
+
+      navigate(`/order/${order.id}`);
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast({
+        title: "Order Failed",
         description: "Failed to place your order. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (items.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <ShoppingCart className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-          <h2 className="text-2xl font-bold mb-4">Your Cart is Empty</h2>
-          <p className="mb-6">Add some products to your cart before proceeding to checkout.</p>
-          <Button asChild>
-            <Link to="/shop">Start Shopping</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const totals = calculateTotal();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">
-              <Home className="h-4 w-4" />
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/cart">Cart</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink>Checkout</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <>
+      <SEOHead
+        title="Checkout"
+        description="Complete your purchase at Lenshub Eyewear. Cash on Delivery available."
+      />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
-      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Shipping Address */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2" />
+                    Shipping Address
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {addresses.length > 0 && (
+                    <div>
+                      <Label>Select Saved Address</Label>
+                      <Select value={selectedAddress} onValueChange={setSelectedAddress}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose an address" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addresses.map((address) => (
+                            <SelectItem key={address.id!} value={address.id!}>
+                              {address.first_name} {address.last_name} - {address.street}, {address.city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1">
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <div className="flex items-center mb-4">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                step >= 1 ? "bg-primary text-white" : "bg-gray-200"
-              }`}>
-                1
-              </div>
-              <div className="ml-3 font-semibold">Shipping Information</div>
+                  <Separator />
+                  <p className="font-medium">Or enter a new address:</p>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>First Name</Label>
+                      <Input
+                        value={newAddress.first_name}
+                        onChange={(e) => setNewAddress({...newAddress, first_name: e.target.value})}
+                        placeholder="First name"
+                      />
+                    </div>
+                    <div>
+                      <Label>Last Name</Label>
+                      <Input
+                        value={newAddress.last_name}
+                        onChange={(e) => setNewAddress({...newAddress, last_name: e.target.value})}
+                        placeholder="Last name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Phone Number</Label>
+                    <Input
+                      value={newAddress.phone}
+                      onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})}
+                      placeholder="+91 9876543210"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Street Address</Label>
+                    <Input
+                      value={newAddress.street}
+                      onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
+                      placeholder="House number, street name"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>City</Label>
+                      <Input
+                        value={newAddress.city}
+                        onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
+                        placeholder="City"
+                      />
+                    </div>
+                    <div>
+                      <Label>State</Label>
+                      <Input
+                        value={newAddress.state}
+                        onChange={(e) => setNewAddress({...newAddress, state: e.target.value})}
+                        placeholder="State"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Postal Code</Label>
+                    <Input
+                      value={newAddress.postal_code}
+                      onChange={(e) => setNewAddress({...newAddress, postal_code: e.target.value})}
+                      placeholder="411001"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Payment Method */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Payment Method
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg bg-primary/5">
+                    <Truck className="w-6 h-6 text-primary" />
+                    <div>
+                      <h3 className="font-semibold">Cash on Delivery (COD)</h3>
+                      <p className="text-sm text-gray-600">Pay when your order is delivered to your doorstep</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Currently, we only accept Cash on Delivery. Online payment options will be available soon.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
-            {step === 1 && (
-              <form onSubmit={handleSubmitShipping}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                    />
-                  </div>
+            {/* Order Summary */}
+            <div>
+              <Card className="sticky top-8">
+                <CardHeader>
+                  <CardTitle>Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm">{item.name}</h4>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      </div>
+                      <span className="font-medium">
+                        {formatCurrency(item.price * item.quantity)}
+                      </span>
+                    </div>
+                  ))}
+
+                  <Separator />
 
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                    />
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(totals.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>GST (18%)</span>
+                      <span>{formatCurrency(totals.tax)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Shipping</span>
+                      <span>{totals.shipping === 0 ? 'Free' : formatCurrency(totals.shipping)}</span>
+                    </div>
+                    {totals.shipping === 0 && (
+                      <p className="text-xs text-green-600">🎉 Free shipping on orders above ₹1000!</p>
+                    )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
+                  <Separator />
+
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span>{formatCurrency(totals.total)}</span>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="address">Street Address</Label>
-                    <Input
-                      id="address"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="postalCode">Postal Code</Label>
-                    <Input
-                      id="postalCode"
-                      value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <Button type="submit">Continue to Payment</Button>
-                </div>
-              </form>
-            )}
-          </div>
-
-          {step >= 2 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center mb-4">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  step >= 2 ? "bg-primary text-white" : "bg-gray-200"
-                }`}>
-                  2
-                </div>
-                <div className="ml-3 font-semibold">Payment Method</div>
-              </div>
-
-              <form onSubmit={handleSubmitPayment}>
-                <div className="mb-4 flex items-center">
-                  <CreditCard className="mr-2 h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Credit Card</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input
-                      id="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="cardName">Name on Card</Label>
-                    <Input
-                      id="cardName"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cardExpiry">Expiry Date (MM/YY)</Label>
-                    <Input
-                      id="cardExpiry"
-                      placeholder="MM/YY"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cardCvc">CVC</Label>
-                    <Input
-                      id="cardCvc"
-                      placeholder="123"
-                      value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-between">
-                  <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                    Back
+                  <Button 
+                    onClick={handlePlaceOrder} 
+                    disabled={loading}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {loading ? 'Placing Order...' : `Place Order - ${formatCurrency(totals.total)}`}
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Processing..." : "Place Order"}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
 
-        <div className="lg:w-1/3">
-          <div className="bg-gray-50 rounded-lg p-6 sticky top-8">
-            <h2 className="text-lg font-bold mb-4">Order Summary</h2>
-
-            <div className="divide-y">
-              {items.map((item) => (
-                <div key={item.id} className="py-3 flex items-center">
-                  <div className="w-16 h-16">
-                    <img
-                      src={item.image || "https://via.placeholder.com/80x80"}
-                      alt={item.name}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                  </div>
-                  <div className="font-medium">
-                    {formatCurrency(item.price * item.quantity)}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t mt-4 pt-4">
-              <div className="flex justify-between mb-2">
-                <span>Subtotal</span>
-                <span>{formatCurrency(totalAmount)}</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span>Shipping</span>
-                <span>Free</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span>Tax</span>
-                <span>{formatCurrency(totalAmount * 0.18)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
-                <span>Total</span>
-                <span>{formatCurrency(totalAmount * 1.18)}</span>
-              </div>
-            </div>
-
-            <div className="mt-6 text-sm text-gray-500">
-              <p>By placing your order, you agree to our Terms of Service and Privacy Policy.</p>
+                  <p className="text-xs text-center text-gray-500">
+                    By placing your order, you agree to our terms and conditions.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

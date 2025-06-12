@@ -1,13 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@clerk/clerk-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Home, User, Package, Calendar, Heart, MapPin, Phone, Mail } from "lucide-react";
+import { Home, User, Package, Calendar, Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/lib/utils";
 import { UserProfile, Order, Appointment } from "@/types";
+import AddressList from "@/components/address/AddressList";
 
 const Profile = () => {
   const { user } = useUser();
@@ -175,6 +177,14 @@ const Profile = () => {
                   Profile Information
                 </Button>
                 <Button
+                  variant={activeTab === "addresses" ? "default" : "outline"}
+                  className="justify-start"
+                  onClick={() => setActiveTab("addresses")}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  My Addresses
+                </Button>
+                <Button
                   variant={activeTab === "orders" ? "default" : "outline"}
                   className="justify-start"
                   onClick={() => setActiveTab("orders")}
@@ -193,6 +203,7 @@ const Profile = () => {
                   className="justify-start"
                 >
                   <Link to="/wishlist" className="w-full h-full block text-left">
+                    <Heart className="w-4 h-4 mr-2 inline" />
                     Wishlist
                   </Link>
                 </Button>
@@ -229,13 +240,15 @@ const Profile = () => {
                     <div className="font-medium text-lg">{profile.phone || 'N/A'}</div>
                   </div>
                   <div>
-                    <div className="text-gray-500 uppercase text-sm">Shipping Address</div>
-                    <div className="font-medium text-lg">{getAddressString()}</div>
+                    <div className="text-gray-500 uppercase text-sm">Account Type</div>
+                    <div className="font-medium text-lg capitalize">{profile.role}</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
+
+          {activeTab === "addresses" && <AddressList />}
 
           {activeTab === "orders" && (
             <Card>
@@ -259,6 +272,9 @@ const Profile = () => {
                             Status
                           </th>
                           <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Tracking
+                          </th>
+                          <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -267,21 +283,24 @@ const Profile = () => {
                         {orders.map((order) => (
                           <tr key={order.id}>
                             <td className="px-5 py-5 border-b text-sm">
-                              {order.id.slice(0, 8)}
+                              #{order.id.slice(0, 8)}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
                               {formatDate(order.created_at!)}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
-                              {formatCurrency(order.total * 1.18)}
+                              {formatCurrency(order.total)}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
-                              {order.status}
+                              <span className="capitalize">{order.status}</span>
+                            </td>
+                            <td className="px-5 py-5 border-b text-sm">
+                              {order.tracking_id || 'N/A'}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
                               <Button asChild variant="outline" size="sm">
                                 <Link to={`/order/${order.id}`}>
-                                  Track Order
+                                  View Details
                                 </Link>
                               </Button>
                             </td>
@@ -303,14 +322,20 @@ const Profile = () => {
           {activeTab === "appointments" && (
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold mb-4">Appointments</h2>
+                <h2 className="text-2xl font-bold mb-4">My Appointments</h2>
                 {appointments.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full leading-normal">
                       <thead>
                         <tr>
                           <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Date
+                            Date & Time
+                          </th>
+                          <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Service Type
+                          </th>
+                          <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Duration
                           </th>
                           <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Status
@@ -326,8 +351,14 @@ const Profile = () => {
                             <td className="px-5 py-5 border-b text-sm">
                               {formatDate(appointment.appointment_date)}
                             </td>
+                            <td className="px-5 py-5 border-b text-sm capitalize">
+                              {appointment.appointment_type?.replace('_', ' ')}
+                            </td>
                             <td className="px-5 py-5 border-b text-sm">
-                              {appointment.status}
+                              {appointment.duration} mins
+                            </td>
+                            <td className="px-5 py-5 border-b text-sm">
+                              <span className="capitalize">{appointment.status}</span>
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
                               <Button variant="outline" size="sm">
@@ -343,6 +374,9 @@ const Profile = () => {
                   <div className="text-center py-6">
                     <Calendar className="mx-auto h-8 w-8 text-gray-300 mb-2" />
                     <p className="text-gray-500">No appointments found.</p>
+                    <Button asChild className="mt-4">
+                      <Link to="/eye-test">Book an Appointment</Link>
+                    </Button>
                   </div>
                 )}
               </CardContent>
