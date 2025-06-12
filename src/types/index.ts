@@ -18,7 +18,7 @@ export interface Product {
     length?: number;
     width?: number;
     height?: number;
-  };
+  } | any; // Handle Json from Supabase
   meta_title?: string;
   meta_description?: string;
   slug?: string;
@@ -45,7 +45,7 @@ export interface CartItem {
 export interface Address {
   id?: string;
   user_id?: string;
-  type: 'shipping' | 'billing';
+  type: 'shipping' | 'billing' | string; // Allow string to handle DB values
   first_name: string;
   last_name: string;
   phone?: string;

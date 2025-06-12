@@ -1,44 +1,36 @@
 
 import { useState } from "react";
+import { useUser } from "@clerk/clerk-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
+import { useToast } from "@/hooks/use-toast";
 import { Address } from "@/types";
 
 interface AddressFormProps {
   address?: Address;
-  onSuccess: () => void;
-  onCancel: () => void;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
-
-const indianStates = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
-  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
-  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
-];
 
 const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
   const { user } = useUser();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<Partial<Address>>({
-    type: 'shipping',
-    first_name: '',
-    last_name: '',
-    phone: '',
-    street: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country: 'India',
-    is_default: false,
-    ...address
+  const [formData, setFormData] = useState({
+    type: address?.type || "shipping",
+    first_name: address?.first_name || "",
+    last_name: address?.last_name || "",
+    phone: address?.phone || "",
+    street: address?.street || "",
+    city: address?.city || "",
+    state: address?.state || "",
+    postal_code: address?.postal_code || "",
+    country: address?.country || "India",
+    is_default: address?.is_default || false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,42 +40,42 @@ const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
     setLoading(true);
     try {
       const addressData = {
+        user_id: user.id,
         ...formData,
-        user_id: user.id
+        // Ensure required fields are strings
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        postal_code: formData.postal_code,
+        country: formData.country,
       };
 
       if (address?.id) {
-        // Update existing address
         const { error } = await supabase
-          .from('addresses')
+          .from("addresses")
           .update(addressData)
-          .eq('id', address.id);
-
+          .eq("id", address.id);
+        
         if (error) throw error;
-        toast({
-          title: "Address Updated",
-          description: "Your address has been updated successfully."
-        });
+        toast({ title: "Address updated successfully" });
       } else {
-        // Create new address
         const { error } = await supabase
-          .from('addresses')
-          .insert(addressData);
-
+          .from("addresses")
+          .insert([addressData]);
+        
         if (error) throw error;
-        toast({
-          title: "Address Added",
-          description: "Your address has been added successfully."
-        });
+        toast({ title: "Address added successfully" });
       }
 
-      onSuccess();
+      onSuccess?.();
     } catch (error) {
-      console.error('Error saving address:', error);
+      console.error("Error saving address:", error);
       toast({
         title: "Error",
         description: "Failed to save address. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -93,21 +85,16 @@ const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{address ? 'Edit Address' : 'Add New Address'}</CardTitle>
+        <CardTitle>{address ? "Edit Address" : "Add New Address"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="type">Address Type</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value: 'shipping' | 'billing') => 
-                  setFormData({ ...formData, type: value })
-                }
-              >
+              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="shipping">Shipping</SelectItem>
@@ -142,9 +129,9 @@ const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
             <Label htmlFor="phone">Phone Number</Label>
             <Input
               id="phone"
+              type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="+91 9876543210"
             />
           </div>
 
@@ -158,7 +145,7 @@ const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="city">City</Label>
               <Input
@@ -170,23 +157,13 @@ const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
             </div>
             <div>
               <Label htmlFor="state">State</Label>
-              <Select
+              <Input
+                id="state"
                 value={formData.state}
-                onValueChange={(value) => setFormData({ ...formData, state: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select state" />
-                </SelectTrigger>
-                <SelectContent>
-                  {indianStates.map((state) => (
-                    <SelectItem key={state} value={state}>{state}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                required
+              />
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="postal_code">Postal Code</Label>
               <Input
@@ -196,15 +173,18 @@ const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="country">Country</Label>
-              <Input
-                id="country"
-                value={formData.country}
-                readOnly
-                className="bg-gray-100"
-              />
-            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="country">Country</Label>
+            <Select value={formData.country} onValueChange={(value) => setFormData({ ...formData, country: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="India">India</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -220,11 +200,13 @@ const AddressForm = ({ address, onSuccess, onCancel }: AddressFormProps) => {
 
           <div className="flex space-x-2">
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : address ? 'Update Address' : 'Add Address'}
+              {loading ? "Saving..." : address ? "Update Address" : "Add Address"}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
+            {onCancel && (
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancel
+              </Button>
+            )}
           </div>
         </form>
       </CardContent>

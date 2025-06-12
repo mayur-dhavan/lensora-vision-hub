@@ -1,5 +1,5 @@
 
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, MapPin, Phone } from "lucide-react";
 import AppointmentForm from "@/components/appointment/AppointmentForm";
@@ -7,12 +7,12 @@ import AppointmentForm from "@/components/appointment/AppointmentForm";
 const EyeTest = () => {
   return (
     <>
-      <Helmet>
-        <title>Eye Test Appointment - Lenshub Eyewear | Professional Eye Care in Pune</title>
-        <meta name="description" content="Book your comprehensive eye examination at Lenshub Eyewear in Pune. Professional eye tests, vision screening, and personalized eyewear solutions." />
-        <meta name="keywords" content="eye test, eye examination, vision screening, Lenshub, Pune, eyewear, optometrist" />
-        <link rel="canonical" href="/eye-test" />
-      </Helmet>
+      <SEOHead
+        title="Eye Test Appointment - Professional Eye Care in Pune"
+        description="Book your comprehensive eye examination at Lenshub Eyewear in Pune. Professional eye tests, vision screening, and personalized eyewear solutions."
+        keywords="eye test, eye examination, vision screening, Lenshub, Pune, eyewear, optometrist"
+        url="/eye-test"
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
