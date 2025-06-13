@@ -1,6 +1,6 @@
-
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter } from "lucide-react";
+import { Facebook, Instagram, Twitter, Phone, Mail, MapPin } from "lucide-react";
+import { BRAND_NAME, BUSINESS_INFO } from "@/lib/constants";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -11,18 +11,18 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Lensora</h3>
+            <h3 className="text-xl font-bold mb-4">{BRAND_NAME}</h3>
             <p className="text-gray-300 mb-4">
               Premium eyewear for every style and need. Visit our store for eye checkups and personalized recommendations.
             </p>
             <div className="flex space-x-4">
-              <a href="https://facebook.com" className="hover:text-primary transition-colors" aria-label="Facebook">
+              <a href={BUSINESS_INFO.social.facebook} className="hover:text-primary transition-colors" aria-label="Facebook">
                 <Facebook size={20} />
               </a>
-              <a href="https://instagram.com" className="hover:text-primary transition-colors" aria-label="Instagram">
+              <a href={BUSINESS_INFO.social.instagram} className="hover:text-primary transition-colors" aria-label="Instagram">
                 <Instagram size={20} />
               </a>
-              <a href="https://twitter.com" className="hover:text-primary transition-colors" aria-label="Twitter">
+              <a href={BUSINESS_INFO.social.twitter} className="hover:text-primary transition-colors" aria-label="Twitter">
                 <Twitter size={20} />
               </a>
             </div>
@@ -75,24 +75,39 @@ const Footer = () => {
           {/* Contact Info */}
           <div>
             <h3 className="text-xl font-bold mb-4">Visit Us</h3>
-            <p className="text-gray-300 mb-2">
-              LensHub Eyewear
-            </p>
-            <p className="text-gray-300 mb-2">
-              Opposite Bank Of Maharashtra,<br />
-              Sinhgad College Road, Pune
-            </p>
-            <p className="text-gray-300 mb-2">
-              <strong>Phone:</strong> +91 9876543210
-            </p>
-            <p className="text-gray-300">
-              <strong>Email:</strong> info@lensora.com
-            </p>
+            <div className="space-y-3">
+              <div className="flex items-start">
+                <MapPin className="h-5 w-5 mr-2 mt-0.5 text-primary" />
+                <div>
+                  <p className="text-gray-300">
+                    {BUSINESS_INFO.name}<br />
+                    {BUSINESS_INFO.address.street}<br />
+                    {BUSINESS_INFO.address.area}<br />
+                    {BUSINESS_INFO.address.city}, {BUSINESS_INFO.address.state} {BUSINESS_INFO.address.pincode}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <Phone className="h-5 w-5 mr-2 text-primary" />
+                <span className="text-gray-300">{BUSINESS_INFO.contact.phone}</span>
+              </div>
+              <div className="flex items-center">
+                <Mail className="h-5 w-5 mr-2 text-primary" />
+                <span className="text-gray-300">{BUSINESS_INFO.contact.email}</span>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm text-gray-400">
+                <strong>Hours:</strong><br />
+                {BUSINESS_INFO.hours.weekdays}<br />
+                Sunday: Closed
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-6 text-center text-gray-400">
-          <p>&copy; {currentYear} Lensora. All rights reserved.</p>
+          <p>&copy; {currentYear} {BRAND_NAME}. All rights reserved.</p>
         </div>
       </div>
     </footer>

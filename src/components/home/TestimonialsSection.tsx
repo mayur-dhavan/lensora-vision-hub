@@ -1,12 +1,12 @@
-
 import { Card, CardContent } from "@/components/ui/card";
+import { BRAND_NAME } from "@/lib/constants";
 
 const testimonials = [
   {
     id: 1,
     name: "Priya Sharma",
     role: "Customer",
-    text: "The eye test at LensHub was thorough and the optometrist explained everything clearly. Love my new glasses, they fit perfectly!",
+    text: `The eye test at ${BRAND_NAME} was thorough and the optometrist explained everything clearly. Love my new glasses, they fit perfectly!`,
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80"
   },
   {
@@ -20,7 +20,7 @@ const testimonials = [
     id: 3,
     name: "Anjali Desai",
     role: "Customer",
-    text: "As someone who's worn glasses since childhood, I can say that LensHub offers the best combination of quality, style and price I've found.",
+    text: `As someone who's worn glasses since childhood, I can say that ${BRAND_NAME} offers the best combination of quality, style and price I've found.`,
     image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80"
   }
 ];

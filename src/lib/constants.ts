@@ -1,4 +1,3 @@
-
 export const BRAND_NAME = "Lenshub";
 export const BRAND_TAGLINE = "Your Vision, Our Passion";
 export const BUSINESS_INFO = {

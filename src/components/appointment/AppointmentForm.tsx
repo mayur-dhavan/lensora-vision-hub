@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@clerk/clerk-react";
 import { cn } from "@/lib/utils";
+import { BRAND_NAME, BUSINESS_INFO } from "@/lib/constants";
 
 const AppointmentForm = () => {
   const { user } = useUser();
@@ -117,7 +117,7 @@ const AppointmentForm = () => {
       <CardHeader>
         <CardTitle>Book an Eye Test Appointment</CardTitle>
         <p className="text-sm text-gray-600">
-          Schedule your visit to Lenshub Eyewear in Pune for professional eye care services.
+          Schedule your visit to {BRAND_NAME} in {BUSINESS_INFO.address.city} for professional eye care services.
         </p>
       </CardHeader>
       <CardContent>
@@ -226,7 +226,7 @@ const AppointmentForm = () => {
               id="contact_number"
               value={formData.contact_number}
               onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
-              placeholder={user?.phoneNumbers?.[0]?.phoneNumber || "+91 9876543210"}
+              placeholder={user?.phoneNumbers?.[0]?.phoneNumber || BUSINESS_INFO.contact.phone}
             />
           </div>
 

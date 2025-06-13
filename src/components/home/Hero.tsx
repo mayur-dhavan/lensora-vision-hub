@@ -1,7 +1,7 @@
-
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { BRAND_NAME } from "@/lib/constants";
 
 const Hero = () => {
   return (
@@ -16,7 +16,7 @@ const Hero = () => {
                     Premium Eyewear for Every Style
                   </h1>
                   <p className="text-xl text-white/80 mb-8">
-                    Discover our collection of designer frames and sunglasses
+                    Discover our collection of designer frames and sunglasses at {BRAND_NAME}
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <Button asChild size="lg" className="font-medium">
@@ -43,14 +43,14 @@ const Hero = () => {
                     Professional Eye Care Services
                   </h1>
                   <p className="text-xl text-white/80 mb-8">
-                    Comprehensive eye exams with state-of-the-art equipment
+                    Comprehensive eye exams with state-of-the-art equipment at {BRAND_NAME}
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <Button asChild size="lg" className="font-medium">
                       <Link to="/eye-test">Book Appointment</Link>
                     </Button>
                     <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-gray-900">
-                      <Link to="/services">Our Services</Link>
+                      <Link to="/about">Our Services</Link>
                     </Button>
                   </div>
                 </div>
@@ -70,7 +70,7 @@ const Hero = () => {
                     New Season Sunglasses
                   </h1>
                   <p className="text-xl text-white/80 mb-8">
-                    Protect your eyes in style with our latest collection
+                    Protect your eyes in style with our latest collection at {BRAND_NAME}
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <Button asChild size="lg" className="font-medium">

@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -9,11 +8,14 @@ import {
   ClipboardList, 
   LogOut, 
   Menu, 
-  X
+  X,
+  Package,
+  Settings
 } from "lucide-react";
 import { useClerk } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { BRAND_NAME } from "@/lib/constants";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -58,7 +60,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       >
         <div className="flex h-16 items-center justify-center border-b">
           <Link to="/admin" className="flex items-center">
-            <span className="text-2xl font-bold text-primary">Lensora Admin</span>
+            <span className="text-2xl font-bold text-primary">{BRAND_NAME} Admin</span>
           </Link>
         </div>
         <nav className="flex flex-col p-4">
@@ -79,6 +81,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               >
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Products
+              </Button>
+            </Link>
+            <Link to="/admin/inventory">
+              <Button 
+                variant={isActive("/admin/inventory") ? "default" : "ghost"} 
+                className="w-full justify-start"
+              >
+                <Package className="mr-2 h-4 w-4" />
+                Inventory
               </Button>
             </Link>
             <Link to="/admin/orders">
@@ -108,9 +119,24 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 Customers
               </Button>
             </Link>
+            <Link to="/admin/categories">
+              <Button 
+                variant={isActive("/admin/categories") ? "default" : "ghost"} 
+                className="w-full justify-start"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Categories
+              </Button>
+            </Link>
           </div>
 
           <div className="mt-auto pt-4 border-t">
+            <Link to="/" className="block mb-2">
+              <Button variant="outline" className="w-full justify-start">
+                <Home className="mr-2 h-4 w-4" />
+                View Store
+              </Button>
+            </Link>
             <Button 
               variant="ghost" 
               className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50"

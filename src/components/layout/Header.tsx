@@ -1,13 +1,16 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ShoppingCart, User, Heart, Menu, X, Search } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ShoppingCart, User, Heart, Menu, X, Search, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { useUser, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { BRAND_NAME } from "@/lib/constants";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { totalItems } = useCart();
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -15,11 +18,32 @@ const Header = () => {
 
   return (
     <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
+      {/* Top bar with contact info */}
+      <div className="bg-primary text-primary-foreground py-2 hidden md:block">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center">
+                <Phone className="h-4 w-4 mr-1" />
+                <span>+91 98765 43210</span>
+              </div>
+              <span>Mon-Sat: 10AM-8PM</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span>Free Eye Test Available</span>
+              <Link to="/eye-test" className="hover:underline font-medium">
+                Book Now
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-primary">Lensora</span>
+            <span className="text-2xl font-bold text-primary">{BRAND_NAME}</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -46,16 +70,28 @@ const Header = () => {
             <Button variant="ghost" size="icon" className="hidden md:flex">
               <Search className="h-5 w-5" />
             </Button>
-            <Link to="/wishlist" className="hidden md:flex relative">
-              <Button variant="ghost" size="icon">
-                <Heart className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/account" className="hidden md:flex">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
+            
+            <SignedIn>
+              <Link to="/wishlist" className="hidden md:flex relative">
+                <Button variant="ghost" size="icon">
+                  <Heart className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/profile" className="hidden md:flex">
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            </SignedIn>
+
+            <SignedOut>
+              <Link to="/login" className="hidden md:flex">
+                <Button variant="outline" size="sm">
+                  Login
+                </Button>
+              </Link>
+            </SignedOut>
+
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
@@ -66,6 +102,7 @@ const Header = () => {
                 )}
               </Button>
             </Link>
+            
             <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMenu}>
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -111,21 +148,33 @@ const Header = () => {
               >
                 Contact
               </Link>
-              <div className="pt-2 flex items-center">
-                <Button variant="ghost" size="icon">
-                  <Search className="h-5 w-5" />
-                </Button>
-                <Link to="/wishlist" className="ml-2">
-                  <Button variant="ghost" size="icon">
-                    <Heart className="h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link to="/account" className="ml-2">
-                  <Button variant="ghost" size="icon">
-                    <User className="h-5 w-5" />
-                  </Button>
-                </Link>
-              </div>
+              
+              <SignedIn>
+                <div className="pt-2 flex flex-col space-y-2">
+                  <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <User className="h-5 w-5 mr-2" />
+                      My Account
+                    </Button>
+                  </Link>
+                  <Link to="/wishlist" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <Heart className="h-5 w-5 mr-2" />
+                      Wishlist
+                    </Button>
+                  </Link>
+                </div>
+              </SignedIn>
+
+              <SignedOut>
+                <div className="pt-2">
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      Login
+                    </Button>
+                  </Link>
+                </div>
+              </SignedOut>
             </nav>
           </div>
         )}

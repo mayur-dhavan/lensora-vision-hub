@@ -1,16 +1,16 @@
-
 import SEOHead from "@/components/seo/SEOHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, MapPin, Phone } from "lucide-react";
 import AppointmentForm from "@/components/appointment/AppointmentForm";
+import { BRAND_NAME, BUSINESS_INFO } from "@/lib/constants";
 
 const EyeTest = () => {
   return (
     <>
       <SEOHead
         title="Eye Test Appointment - Professional Eye Care in Pune"
-        description="Book your comprehensive eye examination at Lenshub Eyewear in Pune. Professional eye tests, vision screening, and personalized eyewear solutions."
-        keywords="eye test, eye examination, vision screening, Lenshub, Pune, eyewear, optometrist"
+        description={`Book your comprehensive eye examination at ${BRAND_NAME} in ${BUSINESS_INFO.address.city}. Professional eye tests, vision screening, and personalized eyewear solutions.`}
+        keywords={`eye test, eye examination, vision screening, ${BRAND_NAME}, ${BUSINESS_INFO.address.city}, eyewear, optometrist`}
         url="/eye-test"
       />
 
@@ -21,8 +21,8 @@ const EyeTest = () => {
               Professional Eye Care Services
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Experience comprehensive eye examinations and personalized vision care at Lenshub Eyewear, 
-              Pune's trusted destination for complete eye care solutions.
+              Experience comprehensive eye examinations and personalized vision care at {BRAND_NAME}, 
+              {BUSINESS_INFO.address.city}'s trusted destination for complete eye care solutions.
             </p>
           </div>
 
@@ -67,20 +67,21 @@ const EyeTest = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <h4 className="font-semibold">Lenshub Eyewear</h4>
+                    <h4 className="font-semibold">{BUSINESS_INFO.name}</h4>
                     <p className="text-gray-600">
-                      Shop No. 15, Ground Floor<br />
-                      FC Road, Pune - 411004<br />
-                      Maharashtra, India
+                      {BUSINESS_INFO.address.street}<br />
+                      {BUSINESS_INFO.address.area}<br />
+                      {BUSINESS_INFO.address.city} - {BUSINESS_INFO.address.pincode}<br />
+                      {BUSINESS_INFO.address.state}, {BUSINESS_INFO.address.country}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Phone className="w-4 h-4 text-primary" />
-                    <span>+91 98765 43210</span>
+                    <span>{BUSINESS_INFO.contact.phone}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="w-4 h-4 text-primary" />
-                    <span>Mon-Sat: 10:00 AM - 8:00 PM</span>
+                    <span>{BUSINESS_INFO.hours.weekdays}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -95,7 +96,7 @@ const EyeTest = () => {
           {/* Why Choose Us */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-center">Why Choose Lenshub Eyewear?</CardTitle>
+              <CardTitle className="text-center">Why Choose {BRAND_NAME}?</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -123,7 +124,7 @@ const EyeTest = () => {
                   </div>
                   <h3 className="font-semibold mb-2">Convenient Location</h3>
                   <p className="text-sm text-gray-600">
-                    Located in the heart of Pune with easy access and ample parking facilities.
+                    Located in the heart of {BUSINESS_INFO.address.city} with easy access and ample parking facilities.
                   </p>
                 </div>
               </div>

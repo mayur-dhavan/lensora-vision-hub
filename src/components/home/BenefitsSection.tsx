@@ -1,5 +1,5 @@
-
 import { Eye, Shield, Truck, Award } from "lucide-react";
+import { BRAND_NAME } from "@/lib/constants";
 
 const BenefitsSection = () => {
   const benefits = [
@@ -30,7 +30,7 @@ const BenefitsSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">
-            Why Choose Lensora
+            Why Choose {BRAND_NAME}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             We are committed to providing exceptional service and products that enhance your vision and style

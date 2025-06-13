@@ -1,7 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Calendar, Clock } from "lucide-react";
+import { BRAND_NAME } from "@/lib/constants";
 
 const EyeTestCTA = () => {
   return (
@@ -11,14 +11,14 @@ const EyeTestCTA = () => {
           <div className="md:w-1/2 mb-8 md:mb-0">
             <h2 className="text-3xl font-bold mb-4">Professional Eye Test Services</h2>
             <p className="text-lg opacity-90 mb-6">
-              Our experienced optometrists use state-of-the-art equipment to provide comprehensive eye examinations. Book your appointment today.
+              Our experienced optometrists at {BRAND_NAME} use state-of-the-art equipment to provide comprehensive eye examinations. Book your appointment today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild size="lg" variant="secondary">
                 <Link to="/eye-test">Book Appointment</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                <Link to="/services">Learn More</Link>
+                <Link to="/about">Learn More</Link>
               </Button>
             </div>
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">

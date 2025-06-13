@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,9 +28,11 @@ import Register from "./pages/Register";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
+import AdminInventory from "./pages/admin/Inventory";
 import AdminOrders from "./pages/admin/Orders";
 import AdminAppointments from "./pages/admin/Appointments";
 import AdminCustomers from "./pages/admin/Customers";
+import AdminCategories from "./pages/admin/Categories";
 
 const queryClient = new QueryClient();
 // Use the environment variable for the Clerk publishable key
@@ -68,9 +69,11 @@ const App = () => (
                 {/* Admin Routes */}
                 <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/products" element={<RequireAdmin><AdminLayout><AdminProducts /></AdminLayout></RequireAdmin>} />
+                <Route path="/admin/inventory" element={<RequireAdmin><AdminLayout><AdminInventory /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/orders" element={<RequireAdmin><AdminLayout><AdminOrders /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/appointments" element={<RequireAdmin><AdminLayout><AdminAppointments /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/customers" element={<RequireAdmin><AdminLayout><AdminCustomers /></AdminLayout></RequireAdmin>} />
+                <Route path="/admin/categories" element={<RequireAdmin><AdminLayout><AdminCategories /></AdminLayout></RequireAdmin>} />
                 
                 {/* Catch-all Route */}
                 <Route path="*" element={<Layout><NotFound /></Layout>} />
