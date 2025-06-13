@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Home, Package, Check, Truck, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Order, OrderItem, Product } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 
@@ -23,7 +22,7 @@ interface OrderStep {
 
 const OrderTracking = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [order, setOrder] = useState<OrderWithItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,7 +147,7 @@ const OrderTracking = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink>Order #{id.slice(0, 8)}</BreadcrumbLink>
+            <BreadcrumbLink>Order #{id?.slice(0, 8)}</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { Product } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProductCardProps {
   product: Product;
@@ -17,7 +16,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 

@@ -6,13 +6,13 @@ import { Home, ShoppingCart, Trash, Heart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { WishlistItem, Product } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 
 const Wishlist = () => {
   const { addToCart } = useCart();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [wishlistItems, setWishlistItems] = useState<(WishlistItem & { product: Product })[]>([]);
   const [loading, setLoading] = useState(true);
 

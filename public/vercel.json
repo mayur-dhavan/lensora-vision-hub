@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/admin/(.*)",
+      "destination": "https://lensora-vision-hub.vercel.app/admin/$1",
+      "permanent": false
+    }
+  ]
+}

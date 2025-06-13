@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -20,7 +19,11 @@ export default defineConfig(({ mode }) => ({
     host: "::",
   },
   define: {
-    // Hard-code the Clerk publishable key for immediate access
-    'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify("pk_test_ZW5nYWdlZC1veXN0ZXItODQuY2xlcmsuYWNjb3VudHMuZGV2JA"),
+    // Set the redirect URL for production
+    'import.meta.env.VITE_REDIRECT_URL': JSON.stringify(
+      mode === 'production' 
+        ? 'https://lensora-vision-hub.vercel.app' 
+        : 'http://localhost:8080'
+    ),
   },
 }));
