@@ -21,15 +21,11 @@ const Header = () => {
     try {
       console.log("Header: Starting sign out process...");
       await signOut();
-      console.log("Header: Sign out completed");
       
       toast({
         title: "Signed out successfully",
         description: "You have been logged out of your account."
       });
-      
-      // Navigate to home page
-      navigate("/");
       
       // Close mobile menu if open
       setIsMenuOpen(false);

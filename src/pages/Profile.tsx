@@ -29,17 +29,18 @@ const Profile = () => {
       try {
         console.log("Fetching user data for:", user.id);
 
-        // Fetch user profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+        // Fetch user profile with retry logic
+        let profileData = null;
+        try {
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
 
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          // If profile doesn't exist, create one
-          if (profileError.code === 'PGRST116') {
+          if (error && error.code === 'PGRST116') {
+            // Profile doesn't exist, create one
+            console.log("Profile not found, creating new profile");
             const { data: newProfile, error: createError } = await supabase
               .from('user_profiles')
               .insert({
@@ -55,41 +56,59 @@ const Profile = () => {
             if (createError) {
               console.error('Error creating profile:', createError);
             } else {
-              setProfile(newProfile as UserProfile);
+              profileData = newProfile;
+              console.log("New profile created:", newProfile);
             }
+          } else if (error) {
+            console.error('Error fetching profile:', error);
+          } else {
+            profileData = data;
+            console.log("Profile data fetched:", data);
           }
-        } else if (profileData) {
-          console.log("Profile data:", profileData);
+        } catch (profileError) {
+          console.error("Profile fetch error:", profileError);
+        }
+
+        if (profileData) {
           setProfile(profileData as UserProfile);
         }
 
         // Fetch orders
-        const { data: ordersData, error: ordersError } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+        try {
+          const { data: ordersData, error: ordersError } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
 
-        if (ordersError) {
-          console.error('Error fetching orders:', ordersError);
-        } else {
-          console.log("Orders data:", ordersData);
-          setOrders(ordersData as Order[]);
+          if (ordersError) {
+            console.error('Error fetching orders:', ordersError);
+          } else {
+            console.log("Orders data:", ordersData);
+            setOrders(ordersData as Order[]);
+          }
+        } catch (ordersError) {
+          console.error("Orders fetch error:", ordersError);
         }
 
         // Fetch appointments
-        const { data: appointmentsData, error: appointmentsError } = await supabase
-          .from('appointments')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('appointment_date', { ascending: false });
+        try {
+          const { data: appointmentsData, error: appointmentsError } = await supabase
+            .from('appointments')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('appointment_date', { ascending: false });
 
-        if (appointmentsError) {
-          console.error('Error fetching appointments:', appointmentsError);
-        } else {
-          console.log("Appointments data:", appointmentsData);
-          setAppointments(appointmentsData as Appointment[]);
+          if (appointmentsError) {
+            console.error('Error fetching appointments:', appointmentsError);
+          } else {
+            console.log("Appointments data:", appointmentsData);
+            setAppointments(appointmentsData as Appointment[]);
+          }
+        } catch (appointmentsError) {
+          console.error("Appointments fetch error:", appointmentsError);
         }
+
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {

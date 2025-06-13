@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
+import { toast } from "@/components/ui/use-toast";
 
 interface AuthContextType {
   user: User | null;
@@ -37,8 +38,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error("Error getting session:", error);
         } else {
+          console.log("Initial session:", session?.user?.email || "No session");
           setSession(session);
           setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            await createOrUpdateUserProfile(session.user);
+            await checkAdminStatus(session.user.id);
+          }
         }
       } catch (error) {
         console.error("Error in getInitialSession:", error);
@@ -58,44 +65,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       setIsLoading(false);
 
-      // Create or update user profile when user signs in
       if (event === 'SIGNED_IN' && session?.user) {
         await createOrUpdateUserProfile(session.user);
+        await checkAdminStatus(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        setIsAdmin(false);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (user) {
-        try {
-          const { data, error } = await supabase
-            .from("user_profiles")
-            .select("role")
-            .eq("id", user.id)
-            .single();
-          
-          if (!error && data) {
-            setIsAdmin(data.role === "admin");
-          } else {
-            setIsAdmin(false);
-          }
-        } catch (error) {
-          console.error("Error checking admin status:", error);
-          setIsAdmin(false);
-        }
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      
+      if (!error && data) {
+        setIsAdmin(data.role === "admin");
       } else {
         setIsAdmin(false);
       }
-    };
-
-    checkAdminStatus();
-  }, [user]);
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      setIsAdmin(false);
+    }
+  };
 
   const createOrUpdateUserProfile = async (user: User) => {
     try {
+      console.log("Creating/updating profile for:", user.email);
+      
       const { data: existingProfile } = await supabase
         .from("user_profiles")
         .select("id")
@@ -103,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (!existingProfile) {
-        // Create new profile
+        console.log("Creating new profile");
         const { error } = await supabase
           .from("user_profiles")
           .insert({
@@ -116,7 +119,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) {
           console.error("Error creating user profile:", error);
+        } else {
+          console.log("Profile created successfully");
         }
+      } else {
+        console.log("Profile already exists");
       }
     } catch (error) {
       console.error("Error in createOrUpdateUserProfile:", error);
@@ -159,10 +166,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
+      const redirectUrl = window.location.origin;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: redirectUrl,
         },
       });
 
@@ -175,17 +183,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      console.log("Signing out...");
+      console.log("AuthContext: Starting sign out...");
+      
+      // Clear local state first
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      
+      // Then sign out from Supabase
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
         console.error("Error signing out:", error);
         throw error;
       }
-      console.log("Sign out successful");
-      // Clear local state immediately
-      setUser(null);
-      setSession(null);
-      setIsAdmin(false);
+      
+      console.log("AuthContext: Sign out successful");
+      
+      // Force reload to clear any cached state
+      window.location.href = '/';
+      
     } catch (error) {
       console.error("Error in signOut:", error);
       throw error;
