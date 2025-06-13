@@ -31,16 +31,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error getting session:", error);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error("Error in getInitialSession:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getInitialSession();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -111,44 +124,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          first_name: firstName,
-          last_name: lastName,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          },
         },
-      },
-    });
+      });
 
-    return { data, error };
+      return { data, error };
+    } catch (error) {
+      console.error("Error in signUp:", error);
+      return { data: null, error };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    return { data, error };
+      return { data, error };
+    } catch (error) {
+      console.error("Error in signIn:", error);
+      return { data: null, error };
+    }
   };
 
   const signInWithGoogle = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
 
-    return { data, error };
+      return { data, error };
+    } catch (error) {
+      console.error("Error in signInWithGoogle:", error);
+      return { data: null, error };
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error);
+    try {
+      console.log("Signing out...");
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        throw error;
+      }
+      console.log("Sign out successful");
+      // Clear local state immediately
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+    } catch (error) {
+      console.error("Error in signOut:", error);
+      throw error;
     }
   };
 

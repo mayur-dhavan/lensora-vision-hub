@@ -18,15 +18,19 @@ const Shop = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const { data, error } = await supabase.from("categories").select("*");
-      
-      if (error) {
-        console.error("Error fetching categories:", error);
-        return;
-      }
-      
-      if (data) {
-        setCategories(data);
+      try {
+        const { data, error } = await supabase.from("categories").select("*");
+        
+        if (error) {
+          console.error("Error fetching categories:", error);
+          return;
+        }
+        
+        if (data) {
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Error in fetchCategories:", error);
       }
     };
     
@@ -37,34 +41,38 @@ const Shop = () => {
     const fetchProducts = async () => {
       setLoading(true);
       
-      let query = supabase.from("products").select("*");
-      
-      if (categoryParam) {
-        query = query.eq("category", categoryParam);
-      }
-      
-      if (searchQuery) {
-        query = query.ilike("name", `%${searchQuery}%`);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error("Error fetching products:", error);
-        return;
-      }
-      
-      if (data) {
-        // Process each product to ensure the images field is an array
-        const processedProducts: Product[] = data.map(item => ({
-          ...item,
-          images: Array.isArray(item.images) ? item.images : []
-        }));
+      try {
+        let query = supabase.from("products").select("*");
         
-        setProducts(processedProducts);
+        if (categoryParam) {
+          query = query.eq("category", categoryParam);
+        }
+        
+        if (searchQuery) {
+          query = query.ilike("name", `%${searchQuery}%`);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error("Error fetching products:", error);
+          return;
+        }
+        
+        if (data) {
+          // Process each product to ensure the images field is an array
+          const processedProducts: Product[] = data.map(item => ({
+            ...item,
+            images: Array.isArray(item.images) ? item.images : []
+          }));
+          
+          setProducts(processedProducts);
+        }
+      } catch (error) {
+        console.error("Error in fetchProducts:", error);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     
     fetchProducts();

@@ -20,10 +20,15 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       try {
+        console.log("Fetching user data for:", user.id);
+
         // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('user_profiles')
@@ -31,17 +36,31 @@ const Profile = () => {
           .eq('id', user.id)
           .single();
 
-        if (profileError && profileError.code !== 'PGRST116') {
+        if (profileError) {
           console.error('Error fetching profile:', profileError);
+          // If profile doesn't exist, create one
+          if (profileError.code === 'PGRST116') {
+            const { data: newProfile, error: createError } = await supabase
+              .from('user_profiles')
+              .insert({
+                id: user.id,
+                email: user.email!,
+                first_name: user.user_metadata?.first_name || '',
+                last_name: user.user_metadata?.last_name || '',
+                role: 'customer'
+              })
+              .select()
+              .single();
+
+            if (createError) {
+              console.error('Error creating profile:', createError);
+            } else {
+              setProfile(newProfile as UserProfile);
+            }
+          }
         } else if (profileData) {
-          // Process address to ensure it matches our type
-          const typedProfile: UserProfile = {
-            ...profileData,
-            role: profileData.role as UserProfile['role'],
-            address: profileData.address || {}
-          };
-          
-          setProfile(typedProfile);
+          console.log("Profile data:", profileData);
+          setProfile(profileData as UserProfile);
         }
 
         // Fetch orders
@@ -54,14 +73,8 @@ const Profile = () => {
         if (ordersError) {
           console.error('Error fetching orders:', ordersError);
         } else {
-          // Process orders to ensure they match our type
-          const typedOrders: Order[] = ordersData.map(order => ({
-            ...order,
-            status: order.status as Order['status'],
-            shipping_address: order.shipping_address || {}
-          }));
-          
-          setOrders(typedOrders);
+          console.log("Orders data:", ordersData);
+          setOrders(ordersData as Order[]);
         }
 
         // Fetch appointments
@@ -74,13 +87,8 @@ const Profile = () => {
         if (appointmentsError) {
           console.error('Error fetching appointments:', appointmentsError);
         } else {
-          // Process appointments to ensure they match our type
-          const typedAppointments: Appointment[] = appointmentsData.map(apt => ({
-            ...apt,
-            status: apt.status as Appointment['status']
-          }));
-          
-          setAppointments(typedAppointments);
+          console.log("Appointments data:", appointmentsData);
+          setAppointments(appointmentsData as Appointment[]);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -91,22 +99,6 @@ const Profile = () => {
 
     fetchUserData();
   }, [user]);
-
-  const getAddressString = () => {
-    if (!profile?.address) return "No address on file";
-    
-    const address = profile.address;
-    // Handle address that might be a string or an object
-    if (typeof address === 'string') return address;
-    
-    // Handle address as an object
-    const street = address.street || '';
-    const city = address.city || '';
-    const state = address.state || '';
-    const postal_code = address.postal_code || '';
-    
-    return [street, city, state, postal_code].filter(Boolean).join(', ');
-  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -127,15 +119,15 @@ const Profile = () => {
     );
   }
 
-  if (!profile) {
+  if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
-          <p className="mb-6">Failed to load your profile. Please try again later.</p>
-          <Button onClick={() => window.location.reload()}>
-            Reload
-          </Button>
+          <h2 className="text-2xl font-bold mb-4">Please Sign In</h2>
+          <p className="mb-6">You need to be signed in to view your profile.</p>
+          <Link to="/login">
+            <Button>Sign In</Button>
+          </Link>
         </div>
       </div>
     );
@@ -228,19 +220,27 @@ const Profile = () => {
                 <div className="space-y-4">
                   <div>
                     <div className="text-gray-500 uppercase text-sm">Full Name</div>
-                    <div className="font-medium text-lg">{profile.first_name} {profile.last_name}</div>
+                    <div className="font-medium text-lg">
+                      {profile?.first_name || user.user_metadata?.first_name || ''} {profile?.last_name || user.user_metadata?.last_name || ''}
+                    </div>
                   </div>
                   <div>
                     <div className="text-gray-500 uppercase text-sm">Email Address</div>
-                    <div className="font-medium text-lg">{profile.email}</div>
+                    <div className="font-medium text-lg">{user.email}</div>
                   </div>
                   <div>
                     <div className="text-gray-500 uppercase text-sm">Phone Number</div>
-                    <div className="font-medium text-lg">{profile.phone || 'N/A'}</div>
+                    <div className="font-medium text-lg">{profile?.phone || user.phone || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-gray-500 uppercase text-sm">Account Type</div>
-                    <div className="font-medium text-lg capitalize">{profile.role}</div>
+                    <div className="font-medium text-lg capitalize">{profile?.role || 'customer'}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 uppercase text-sm">Member Since</div>
+                    <div className="font-medium text-lg">
+                      {user.created_at ? formatDate(user.created_at) : 'N/A'}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -271,9 +271,6 @@ const Profile = () => {
                             Status
                           </th>
                           <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Tracking
-                          </th>
-                          <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -285,16 +282,13 @@ const Profile = () => {
                               #{order.id.slice(0, 8)}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
-                              {formatDate(order.created_at!)}
+                              {order.created_at ? formatDate(order.created_at) : 'N/A'}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
                               {formatCurrency(order.total)}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
                               <span className="capitalize">{order.status}</span>
-                            </td>
-                            <td className="px-5 py-5 border-b text-sm">
-                              {order.tracking_id || 'N/A'}
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
                               <Button asChild variant="outline" size="sm">
@@ -339,9 +333,6 @@ const Profile = () => {
                           <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Status
                           </th>
-                          <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Actions
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -358,11 +349,6 @@ const Profile = () => {
                             </td>
                             <td className="px-5 py-5 border-b text-sm">
                               <span className="capitalize">{appointment.status}</span>
-                            </td>
-                            <td className="px-5 py-5 border-b text-sm">
-                              <Button variant="outline" size="sm">
-                                View Details
-                              </Button>
                             </td>
                           </tr>
                         ))}

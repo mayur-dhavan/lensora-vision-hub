@@ -19,14 +19,22 @@ const Header = () => {
 
   const handleSignOut = async () => {
     try {
+      console.log("Header: Starting sign out process...");
       await signOut();
+      console.log("Header: Sign out completed");
+      
       toast({
         title: "Signed out successfully",
         description: "You have been logged out of your account."
       });
+      
+      // Navigate to home page
       navigate("/");
+      
+      // Close mobile menu if open
+      setIsMenuOpen(false);
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error("Header: Error signing out:", error);
       toast({
         title: "Error",
         description: "Failed to sign out. Please try again.",
@@ -194,10 +202,7 @@ const Header = () => {
                   <Button 
                     variant="ghost" 
                     className="w-full justify-start"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      handleSignOut();
-                    }}
+                    onClick={handleSignOut}
                   >
                     <LogOut className="h-5 w-5 mr-2" />
                     Sign Out
