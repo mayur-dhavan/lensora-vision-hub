@@ -12,10 +12,11 @@ import {
   Package,
   Settings
 } from "lucide-react";
-import { useClerk } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { BRAND_NAME } from "@/lib/constants";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -24,7 +25,8 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
-  const { signOut } = useClerk();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -32,6 +34,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate("/");
     toast({
       title: "Signed out",
       description: "You have been signed out successfully"

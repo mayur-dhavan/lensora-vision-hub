@@ -11,12 +11,12 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { BRAND_NAME, BUSINESS_INFO } from "@/lib/constants";
 
 const AppointmentForm = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
   const [formData, setFormData] = useState({
@@ -69,9 +69,9 @@ const AppointmentForm = () => {
         appointment_date: appointmentDateTime.toISOString(),
         appointment_type: formData.appointment_type,
         duration: selectedType?.duration || 30,
-        patient_name: formData.patient_name || `${user.firstName} ${user.lastName}`,
+        patient_name: formData.patient_name || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`,
         patient_age: formData.patient_age ? parseInt(formData.patient_age) : null,
-        contact_number: formData.contact_number || user.phoneNumbers?.[0]?.phoneNumber,
+        contact_number: formData.contact_number || user.phone,
         symptoms: formData.symptoms,
         notes: formData.notes,
         status: 'scheduled'
@@ -203,7 +203,7 @@ const AppointmentForm = () => {
                 id="patient_name"
                 value={formData.patient_name}
                 onChange={(e) => setFormData({ ...formData, patient_name: e.target.value })}
-                placeholder={user ? `${user.firstName} ${user.lastName}` : "Enter patient name"}
+                placeholder={user ? `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}` : "Enter patient name"}
               />
             </div>
             <div>
@@ -226,7 +226,7 @@ const AppointmentForm = () => {
               id="contact_number"
               value={formData.contact_number}
               onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
-              placeholder={user?.phoneNumbers?.[0]?.phoneNumber || BUSINESS_INFO.contact.phone}
+              placeholder={user?.phone || BUSINESS_INFO.contact.phone}
             />
           </div>
 

@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, User, Heart, Menu, X, Search, Phone } from "lucide-react";
+import { ShoppingCart, User, Heart, Menu, X, Search, Phone, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { useUser, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { BRAND_NAME } from "@/lib/constants";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { totalItems } = useCart();
-  const { user } = useUser();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
   };
 
   return (
@@ -71,26 +76,35 @@ const Header = () => {
               <Search className="h-5 w-5" />
             </Button>
             
-            <SignedIn>
-              <Link to="/wishlist" className="hidden md:flex relative">
-                <Button variant="ghost" size="icon">
-                  <Heart className="h-5 w-5" />
+            {user ? (
+              <>
+                <Link to="/wishlist" className="hidden md:flex relative">
+                  <Button variant="ghost" size="icon">
+                    <Heart className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/profile" className="hidden md:flex">
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleSignOut}
+                  className="hidden md:flex"
+                  title="Sign Out"
+                >
+                  <LogOut className="h-5 w-5" />
                 </Button>
-              </Link>
-              <Link to="/profile" className="hidden md:flex">
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
-              </Link>
-            </SignedIn>
-
-            <SignedOut>
+              </>
+            ) : (
               <Link to="/login" className="hidden md:flex">
                 <Button variant="outline" size="sm">
                   Login
                 </Button>
               </Link>
-            </SignedOut>
+            )}
 
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon">
@@ -149,7 +163,7 @@ const Header = () => {
                 Contact
               </Link>
               
-              <SignedIn>
+              {user ? (
                 <div className="pt-2 flex flex-col space-y-2">
                   <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start">
@@ -163,10 +177,19 @@ const Header = () => {
                       Wishlist
                     </Button>
                   </Link>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleSignOut();
+                    }}
+                  >
+                    <LogOut className="h-5 w-5 mr-2" />
+                    Sign Out
+                  </Button>
                 </div>
-              </SignedIn>
-
-              <SignedOut>
+              ) : (
                 <div className="pt-2">
                   <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
@@ -174,7 +197,7 @@ const Header = () => {
                     </Button>
                   </Link>
                 </div>
-              </SignedOut>
+              )}
             </nav>
           </div>
         )}

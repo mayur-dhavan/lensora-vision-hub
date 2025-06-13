@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -14,7 +13,7 @@ import AddressForm from "@/components/address/AddressForm";
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user } = useAuth();
   const { items, total, clearCart } = useCart();
   const { toast } = useToast();
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -98,9 +97,6 @@ const Checkout = () => {
         .insert(orderItems);
 
       if (itemsError) throw itemsError;
-
-      // Note: Removed the update_product_stock call as the function doesn't exist in the database
-      // This would need to be implemented as a proper database function first
 
       clearCart();
       toast({

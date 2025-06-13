@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
-import { ClerkProvider } from "@clerk/clerk-react";
 import { AuthProvider, RequireAuth, RequireAdmin } from "./contexts/AuthContext";
 
 // Pages
@@ -36,60 +35,60 @@ import AdminProducts from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
 import AdminAppointments from "./pages/admin/Appointments";
 import AdminCustomers from "./pages/admin/Customers";
+import AdminInventory from "./pages/admin/Inventory";
+import AdminCategories from "./pages/admin/Categories";
 
 const queryClient = new QueryClient();
-// Use the environment variable for the Clerk publishable key
-const CLERK_PUBLISHABLE_KEY = "pk_test_ZW5nYWdlZC1veXN0ZXItODQuY2xlcmsuYWNjb3VudHMuZGV2JA";
 
 const App = () => (
-  <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-    <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Layout><Index /></Layout>} />
-                <Route path="/shop" element={<Layout><Shop /></Layout>} />
-                <Route path="/shop/:category" element={<Layout><Shop /></Layout>} />
-                <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
-                <Route path="/about" element={<Layout><About /></Layout>} />
-                <Route path="/contact" element={<Layout><Contact /></Layout>} />
-                <Route path="/login" element={<Layout><Login /></Layout>} />
-                <Route path="/register" element={<Layout><Register /></Layout>} />
-                <Route path="/terms" element={<Layout><Terms /></Layout>} />
-                <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
-                <Route path="/faq" element={<Layout><FAQ /></Layout>} />
-                <Route path="/shipping" element={<Layout><Shipping /></Layout>} />
-                <Route path="/returns" element={<Layout><Returns /></Layout>} />
-                
-                {/* Protected User Routes */}
-                <Route path="/eye-test" element={<Layout><RequireAuth><EyeTest /></RequireAuth></Layout>} />
-                <Route path="/wishlist" element={<Layout><RequireAuth><Wishlist /></RequireAuth></Layout>} />
-                <Route path="/cart" element={<Layout><Cart /></Layout>} />
-                <Route path="/checkout" element={<Layout><RequireAuth><Checkout /></RequireAuth></Layout>} />
-                <Route path="/order/:id" element={<Layout><RequireAuth><OrderTracking /></RequireAuth></Layout>} />
-                <Route path="/profile" element={<Layout><RequireAuth><Profile /></RequireAuth></Layout>} />
-                
-                {/* Admin Routes */}
-                <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
-                <Route path="/admin/products" element={<RequireAdmin><AdminLayout><AdminProducts /></AdminLayout></RequireAdmin>} />
-                <Route path="/admin/orders" element={<RequireAdmin><AdminLayout><AdminOrders /></AdminLayout></RequireAdmin>} />
-                <Route path="/admin/appointments" element={<RequireAdmin><AdminLayout><AdminAppointments /></AdminLayout></RequireAdmin>} />
-                <Route path="/admin/customers" element={<RequireAdmin><AdminLayout><AdminCustomers /></AdminLayout></RequireAdmin>} />
-                
-                {/* Catch-all Route */}
-                <Route path="*" element={<Layout><NotFound /></Layout>} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </CartProvider>
-    </QueryClientProvider>
-  </ClerkProvider>
+  <QueryClientProvider client={queryClient}>
+    <CartProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Layout><Index /></Layout>} />
+              <Route path="/shop" element={<Layout><Shop /></Layout>} />
+              <Route path="/shop/:category" element={<Layout><Shop /></Layout>} />
+              <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
+              <Route path="/about" element={<Layout><About /></Layout>} />
+              <Route path="/contact" element={<Layout><Contact /></Layout>} />
+              <Route path="/login" element={<Layout><Login /></Layout>} />
+              <Route path="/register" element={<Layout><Register /></Layout>} />
+              <Route path="/terms" element={<Layout><Terms /></Layout>} />
+              <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
+              <Route path="/faq" element={<Layout><FAQ /></Layout>} />
+              <Route path="/shipping" element={<Layout><Shipping /></Layout>} />
+              <Route path="/returns" element={<Layout><Returns /></Layout>} />
+              
+              {/* Protected User Routes */}
+              <Route path="/eye-test" element={<Layout><RequireAuth><EyeTest /></RequireAuth></Layout>} />
+              <Route path="/wishlist" element={<Layout><RequireAuth><Wishlist /></RequireAuth></Layout>} />
+              <Route path="/cart" element={<Layout><Cart /></Layout>} />
+              <Route path="/checkout" element={<Layout><RequireAuth><Checkout /></RequireAuth></Layout>} />
+              <Route path="/order/:id" element={<Layout><RequireAuth><OrderTracking /></RequireAuth></Layout>} />
+              <Route path="/profile" element={<Layout><RequireAuth><Profile /></RequireAuth></Layout>} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/products" element={<RequireAdmin><AdminLayout><AdminProducts /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/inventory" element={<RequireAdmin><AdminLayout><AdminInventory /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/orders" element={<RequireAdmin><AdminLayout><AdminOrders /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/appointments" element={<RequireAdmin><AdminLayout><AdminAppointments /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/customers" element={<RequireAdmin><AdminLayout><AdminCustomers /></AdminLayout></RequireAdmin>} />
+              <Route path="/admin/categories" element={<RequireAdmin><AdminLayout><AdminCategories /></AdminLayout></RequireAdmin>} />
+              
+              {/* Catch-all Route */}
+              <Route path="*" element={<Layout><NotFound /></Layout>} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </CartProvider>
+  </QueryClientProvider>
 );
 
 export default App;
