@@ -23,16 +23,19 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import FAQ from "./pages/FAQ";
+import Shipping from "./pages/Shipping";
+import Returns from "./pages/Returns";
 
 // Admin Pages
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
-import AdminInventory from "./pages/admin/Inventory";
 import AdminOrders from "./pages/admin/Orders";
 import AdminAppointments from "./pages/admin/Appointments";
 import AdminCustomers from "./pages/admin/Customers";
-import AdminCategories from "./pages/admin/Categories";
 
 const queryClient = new QueryClient();
 // Use the environment variable for the Clerk publishable key
@@ -57,6 +60,11 @@ const App = () => (
                 <Route path="/contact" element={<Layout><Contact /></Layout>} />
                 <Route path="/login" element={<Layout><Login /></Layout>} />
                 <Route path="/register" element={<Layout><Register /></Layout>} />
+                <Route path="/terms" element={<Layout><Terms /></Layout>} />
+                <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
+                <Route path="/faq" element={<Layout><FAQ /></Layout>} />
+                <Route path="/shipping" element={<Layout><Shipping /></Layout>} />
+                <Route path="/returns" element={<Layout><Returns /></Layout>} />
                 
                 {/* Protected User Routes */}
                 <Route path="/eye-test" element={<Layout><RequireAuth><EyeTest /></RequireAuth></Layout>} />
@@ -69,11 +77,9 @@ const App = () => (
                 {/* Admin Routes */}
                 <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/products" element={<RequireAdmin><AdminLayout><AdminProducts /></AdminLayout></RequireAdmin>} />
-                <Route path="/admin/inventory" element={<RequireAdmin><AdminLayout><AdminInventory /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/orders" element={<RequireAdmin><AdminLayout><AdminOrders /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/appointments" element={<RequireAdmin><AdminLayout><AdminAppointments /></AdminLayout></RequireAdmin>} />
                 <Route path="/admin/customers" element={<RequireAdmin><AdminLayout><AdminCustomers /></AdminLayout></RequireAdmin>} />
-                <Route path="/admin/categories" element={<RequireAdmin><AdminLayout><AdminCategories /></AdminLayout></RequireAdmin>} />
                 
                 {/* Catch-all Route */}
                 <Route path="*" element={<Layout><NotFound /></Layout>} />
