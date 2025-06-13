@@ -57,14 +57,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (user) {
-        const { data, error } = await supabase
-          .from("user_profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-        
-        if (!error && data) {
-          setIsAdmin(data.role === "admin");
+        try {
+          const { data, error } = await supabase
+            .from("user_profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+          
+          if (!error && data) {
+            setIsAdmin(data.role === "admin");
+          } else {
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+          setIsAdmin(false);
         }
       } else {
         setIsAdmin(false);
@@ -75,27 +82,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const createOrUpdateUserProfile = async (user: User) => {
-    const { data: existingProfile } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("id", user.id)
-      .single();
-
-    if (!existingProfile) {
-      // Create new profile
-      const { error } = await supabase
+    try {
+      const { data: existingProfile } = await supabase
         .from("user_profiles")
-        .insert({
-          id: user.id,
-          email: user.email!,
-          first_name: user.user_metadata?.first_name || '',
-          last_name: user.user_metadata?.last_name || '',
-          role: 'customer'
-        });
+        .select("id")
+        .eq("id", user.id)
+        .single();
 
-      if (error) {
-        console.error("Error creating user profile:", error);
+      if (!existingProfile) {
+        // Create new profile
+        const { error } = await supabase
+          .from("user_profiles")
+          .insert({
+            id: user.id,
+            email: user.email!,
+            first_name: user.user_metadata?.first_name || '',
+            last_name: user.user_metadata?.last_name || '',
+            role: 'customer'
+          });
+
+        if (error) {
+          console.error("Error creating user profile:", error);
+        }
       }
+    } catch (error) {
+      console.error("Error in createOrUpdateUserProfile:", error);
     }
   };
 
@@ -218,8 +229,14 @@ export const RequireAdmin = ({ children }: { children: ReactNode }) => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold mb-4">Unauthorized</h1>
-          <p>You don't have permission to access this page.</p>
+          <h1 className="text-2xl font-bold mb-4">Unauthorized Access</h1>
+          <p className="mb-4">You don't have permission to access the admin dashboard.</p>
+          <p className="text-sm text-gray-600 mb-6">
+            If you need admin access, please contact the system administrator.
+          </p>
+          <a href="/" className="inline-flex items-center justify-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
+            Go to Home
+          </a>
         </div>
       </div>
     );
