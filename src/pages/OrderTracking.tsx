@@ -54,20 +54,17 @@ const OrderTracking = () => {
           `)
           .eq('order_id', id);
 
-        if (itemsError) throw itemsError;
-
-        // Create properly typed order data
+        if (itemsError) throw itemsError;        // Create properly typed order data
         const orderWithItems = {
           ...orderData,
           status: orderData.status as Order['status'],
-          items: itemsData as any
+          items: itemsData || []
         };
         
-        setOrder(orderWithItems as OrderWithItems);
-
-      } catch (err: any) {
+        setOrder(orderWithItems as OrderWithItems);} catch (err) {
         console.error('Error fetching order:', err);
-        setError(err.message || "Failed to load order details");
+        const errorMessage = err instanceof Error ? err.message : "Failed to load order details";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }

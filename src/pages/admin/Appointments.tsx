@@ -44,12 +44,10 @@ const AdminAppointments = () => {
         .update({ status: newStatus })
         .eq("id", appointmentId);
 
-      if (error) throw error;
-
-      setAppointments(
+      if (error) throw error;      setAppointments(
         appointments.map((appointment) =>
           appointment.id === appointmentId
-            ? { ...appointment, status: newStatus as any }
+            ? { ...appointment, status: newStatus as Appointment['status'] }
             : appointment
         )
       );
@@ -101,7 +99,7 @@ const AdminAppointments = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {appointments.map((appointment: any) => (
+                  {appointments.map((appointment) => (
                     <tr key={appointment.id} className="border-b hover:bg-gray-50">
                       <td className="p-4 font-medium">
                         {new Date(appointment.appointment_date).toLocaleDateString()}{" "}

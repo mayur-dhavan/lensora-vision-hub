@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,12 +57,20 @@ const Checkout = () => {
       console.error("Error fetching addresses:", error);
     }
   };
-
   const handlePlaceOrder = async () => {
     if (!user || !selectedAddress) {
       toast({
         title: "Missing Information",
         description: "Please select a delivery address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (items.length === 0) {
+      toast({
+        title: "Empty Cart",
+        description: "Your cart is empty. Add some items before checking out.",
         variant: "destructive",
       });
       return;
@@ -77,12 +85,15 @@ const Checkout = () => {
           user_id: user.id,
           status: "pending",
           total: total,
-          shipping_address: selectedAddress as any, // Convert to Json
+          shipping_address: JSON.parse(JSON.stringify(selectedAddress)), // Convert to Json
         })
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error("Order creation error:", orderError);
+        throw new Error(`Failed to create order: ${orderError.message}`);
+      }
 
       // Create order items
       const orderItems = items.map((item) => ({
@@ -96,7 +107,12 @@ const Checkout = () => {
         .from("order_items")
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error("Order items creation error:", itemsError);
+        // Try to clean up the order if items creation fails
+        await supabase.from("orders").delete().eq("id", order.id);
+        throw new Error(`Failed to create order items: ${itemsError.message}`);
+      }
 
       clearCart();
       toast({
@@ -109,7 +125,7 @@ const Checkout = () => {
       console.error("Error placing order:", error);
       toast({
         title: "Error",
-        description: "Failed to place order. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to place order. Please try again.",
         variant: "destructive",
       });
     } finally {

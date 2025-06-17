@@ -35,11 +35,12 @@ const Login = () => {
           description: "Welcome back!"
         });
         navigate("/");
-      }
-    } catch (err: any) {
+      }    } catch (err) {
+      console.error("Login error:", err);
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       toast({
         title: "Login Failed",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -57,11 +58,12 @@ const Login = () => {
           description: error.message,
           variant: "destructive"
         });
-      }
-    } catch (err: any) {
+      }    } catch (err) {
+      console.error("Google sign in error:", err);
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       toast({
         title: "Google Sign In Failed",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive"
       });
     }

@@ -1,16 +1,21 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
+import { User, Session, AuthError, AuthResponse } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/use-toast";
+
+interface AuthResponse {
+  data: unknown;
+  error: AuthError | null;
+}
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
   isAdmin: boolean;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<any>;
-  signIn: (email: string, password: string) => Promise<any>;
-  signInWithGoogle: () => Promise<any>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<AuthResponse>;
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
+  signInWithGoogle: () => Promise<AuthResponse>;
   signOut: () => Promise<void>;
 }
 
@@ -141,12 +146,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             last_name: lastName,
           },
         },
-      });
-
-      return { data, error };
+      });      return { data, error };
     } catch (error) {
       console.error("Error in signUp:", error);
-      return { data: null, error };
+      return { data: null, error: error as AuthError };
     }
   };
 
@@ -155,29 +158,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-      });
-
-      return { data, error };
+      });      return { data, error };
     } catch (error) {
       console.error("Error in signIn:", error);
-      return { data: null, error };
+      return { data: null, error: error as AuthError };
     }
   };
-
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = window.location.origin;
+      const redirectUrl = `${window.location.origin}/auth/callback`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
         },
-      });
-
-      return { data, error };
+      });      return { data, error };
     } catch (error) {
       console.error("Error in signInWithGoogle:", error);
-      return { data: null, error };
+      return { data: null, error: error as AuthError };
     }
   };
 

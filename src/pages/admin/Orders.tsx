@@ -37,11 +37,9 @@ const AdminOrders = () => {
         .update({ status: newStatus })
         .eq("id", orderId);
 
-      if (error) throw error;
-
-      setOrders(
+      if (error) throw error;      setOrders(
         orders.map((order) =>
-          order.id === orderId ? { ...order, status: newStatus as any } : order
+          order.id === orderId ? { ...order, status: newStatus as Order['status'] } : order
         )
       );
     } catch (error) {

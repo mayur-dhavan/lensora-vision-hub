@@ -37,11 +37,12 @@ const Register = () => {
           description: "Please check your email to verify your account."
         });
         navigate("/");
-      }
-    } catch (err: any) {
+      }    } catch (err) {
+      console.error("Registration error:", err);
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       toast({
         title: "Registration Failed",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -59,11 +60,12 @@ const Register = () => {
           description: error.message,
           variant: "destructive"
         });
-      }
-    } catch (err: any) {
+      }    } catch (err) {
+      console.error("Google sign in error:", err);
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       toast({
         title: "Google Sign In Failed",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive"
       });
     }

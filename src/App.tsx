@@ -27,6 +27,8 @@ import Privacy from "./pages/Privacy";
 import FAQ from "./pages/FAQ";
 import Shipping from "./pages/Shipping";
 import Returns from "./pages/Returns";
+import AuthCallback from "./pages/AuthCallback";
+import AdminSetup from "./pages/AdminSetup";
 
 // Admin Pages
 import AdminLayout from "./components/admin/AdminLayout";
@@ -55,9 +57,9 @@ const App = () => (
               <Route path="/shop/:category" element={<Layout><Shop /></Layout>} />
               <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
               <Route path="/about" element={<Layout><About /></Layout>} />
-              <Route path="/contact" element={<Layout><Contact /></Layout>} />
-              <Route path="/login" element={<Layout><Login /></Layout>} />
-              <Route path="/register" element={<Layout><Register /></Layout>} />
+              <Route path="/contact" element={<Layout><Contact /></Layout>} />              <Route path="/login" element={<Layout><Login /></Layout>} />              <Route path="/register" element={<Layout><Register /></Layout>} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/admin-setup" element={<Layout><AdminSetup /></Layout>} />
               <Route path="/terms" element={<Layout><Terms /></Layout>} />
               <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
               <Route path="/faq" element={<Layout><FAQ /></Layout>} />
