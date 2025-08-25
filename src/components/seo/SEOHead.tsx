@@ -23,6 +23,11 @@ const SEOHead = ({
   const seoDescription = description || SEO_DEFAULTS.description;
   const seoKeywords = keywords || SEO_DEFAULTS.keywords;
   const seoUrl = `${window.location.origin}${url}`;
+  
+  // Ensure image URL is absolute to prevent react-helmet-async errors
+  const seoImage = image.startsWith('http') 
+    ? image 
+    : `${window.location.origin}${image}`;
 
   return (
     <Helmet>
@@ -34,7 +39,7 @@ const SEOHead = ({
       {/* Open Graph */}
       <meta property="og:title" content={seoTitle} />
       <meta property="og:description" content={seoDescription} />
-      <meta property="og:image" content={image} />
+      <meta property="og:image" content={seoImage} />
       <meta property="og:url" content={seoUrl} />
       <meta property="og:type" content={type} />
       <meta property="og:site_name" content={BRAND_NAME} />
@@ -43,7 +48,7 @@ const SEOHead = ({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={seoTitle} />
       <meta name="twitter:description" content={seoDescription} />
-      <meta name="twitter:image" content={image} />
+      <meta name="twitter:image" content={seoImage} />
       
       {/* Additional Meta Tags */}
       <meta name="robots" content="index, follow" />
