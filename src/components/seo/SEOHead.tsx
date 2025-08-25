@@ -15,7 +15,7 @@ const SEOHead = ({
   title, 
   description, 
   keywords, 
-  image = "/placeholder.svg",
+  image,
   url = "",
   type = "website"
 }: SEOHeadProps) => {
@@ -24,10 +24,11 @@ const SEOHead = ({
   const seoKeywords = keywords || SEO_DEFAULTS.keywords;
   const seoUrl = `${window.location.origin}${url}`;
   
-  // Ensure image URL is absolute to prevent react-helmet-async errors
-  const seoImage = image.startsWith('http') 
-    ? image 
-    : `${window.location.origin}${image}`;
+  // Use a default image if none provided, ensure it's absolute
+  const defaultImage = "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80";
+  const seoImage = image 
+    ? (image.startsWith('http') ? image : `${window.location.origin}${image}`)
+    : defaultImage;
 
   return (
     <Helmet>

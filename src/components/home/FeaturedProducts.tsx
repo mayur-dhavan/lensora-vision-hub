@@ -6,44 +6,63 @@ import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/components/ui/use-toast";
+import { formatCurrency } from "@/lib/utils";
 
-// Mock products data (in a real app, this would come from an API)
+// Featured products data - showcasing real eyewear
 const products = [
   {
     id: "1",
-    name: "Ray-Ban Classic Aviator",
-    price: 159.99,
+    name: "Classic Aviator Prescription",
+    price: 4500,
     image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    category: "sunglasses",
-    description: "Iconic aviator sunglasses that provide 100% UV protection with polarized lenses.",
-    stock: 15
+    category: "Prescription Glasses",
+    description: "Timeless aviator frames with prescription lenses. Perfect blend of style and functionality.",
+    stock: 25
   },
   {
     id: "2",
-    name: "Warby Parker Round",
-    price: 145.00,
-    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    category: "prescription",
-    description: "Stylish round frames made from premium acetate with prescription-ready lenses.",
-    stock: 8
+    name: "Ray-Ban Style Aviator Sunglasses",
+    price: 3500,
+    image: "https://images.unsplash.com/photo-1608539733412-77361e942bae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    category: "Sunglasses",
+    description: "Classic aviator sunglasses with polarized lenses and 100% UV protection.",
+    stock: 40
   },
   {
     id: "3",
-    name: "Oakley Sport Wrap",
-    price: 189.00,
-    image: "https://images.unsplash.com/photo-1608539733412-77361e942bae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    category: "sunglasses",
-    description: "Durable sports sunglasses with impact-resistant lenses and secure fit.",
-    stock: 10
+    name: "Round Vintage Frames",
+    price: 3200,
+    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    category: "Prescription Glasses",
+    description: "Vintage-inspired round frames made from premium acetate with comfortable fit.",
+    stock: 18
   },
   {
     id: "4",
-    name: "Gucci Cat-Eye",
-    price: 329.99,
+    name: "Cat-Eye Designer Sunglasses",
+    price: 5500,
     image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    category: "sunglasses",
-    description: "Elegant cat-eye frames with designer details and gradient lenses.",
-    stock: 5
+    category: "Sunglasses",
+    description: "Elegant cat-eye sunglasses with designer details and gradient lenses.",
+    stock: 15
+  },
+  {
+    id: "5",
+    name: "Computer Blue Light Glasses",
+    price: 2200,
+    image: "https://images.unsplash.com/photo-1556306535-38febf6782e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    category: "Blue Light Glasses",
+    description: "Stylish computer glasses with blue light filtering technology.",
+    stock: 45
+  },
+  {
+    id: "6",
+    name: "Premium Reading Glasses +2.0",
+    price: 1800,
+    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    category: "Reading Glasses",
+    description: "Premium reading glasses with blue light filtering and superior lens quality.",
+    stock: 35
   }
 ];
 
@@ -118,7 +137,8 @@ const FeaturedProducts = () => {
                     {product.name}
                   </h3>
                 </Link>
-                <p className="font-medium text-lg mt-2">${product.price.toFixed(2)}</p>
+                <p className="text-sm text-gray-500 mb-2">{product.category}</p>
+                <p className="font-medium text-lg mt-2">{formatCurrency(product.price)}</p>
               </CardContent>
               
               <CardFooter className="p-4 pt-0">

@@ -7,25 +7,29 @@ const categories = [
     id: 1,
     name: "Prescription Glasses",
     image: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    link: "/shop/prescription"
+    link: "/shop/prescription%20glasses",
+    description: "Stylish prescription eyewear for clear vision"
   },
   {
     id: 2,
     name: "Sunglasses",
     image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    link: "/shop/sunglasses"
+    link: "/shop/sunglasses",
+    description: "Premium sunglasses with UV protection"
   },
   {
     id: 3,
     name: "Reading Glasses",
     image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    link: "/shop/reading"
+    link: "/shop/reading%20glasses",
+    description: "Comfortable reading glasses for enhanced near vision"
   },
   {
     id: 4,
-    name: "Contact Lenses",
-    image: "https://images.unsplash.com/photo-1587258695597-5065ce5c1c0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    link: "/shop/contact-lenses"
+    name: "Blue Light Glasses",
+    image: "https://images.unsplash.com/photo-1556306535-38febf6782e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    link: "/shop/blue%20light%20glasses",
+    description: "Computer glasses with blue light filtering"
   }
 ];
 
@@ -53,6 +57,7 @@ const CategoryHighlights = () => {
                 </div>
                 <CardContent className="p-4 text-center bg-white">
                   <h3 className="font-semibold text-lg">{category.name}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{category.description}</p>
                 </CardContent>
               </Card>
             </Link>

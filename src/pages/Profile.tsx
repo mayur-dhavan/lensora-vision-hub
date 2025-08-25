@@ -17,100 +17,93 @@ const Profile = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) {
+        setError("No user found. Please sign in.");
         setLoading(false);
         return;
       }
 
       setLoading(true);
+      setError(null);
+      
       try {
         console.log("Fetching user data for:", user.id);
 
-        // Fetch user profile with retry logic
-        let profileData = null;
-        try {
-          const { data, error } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+        // Fetch user profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
 
-          if (error && error.code === 'PGRST116') {
-            // Profile doesn't exist, create one
-            console.log("Profile not found, creating new profile");
-            const { data: newProfile, error: createError } = await supabase
-              .from('user_profiles')
-              .insert({
-                id: user.id,
-                email: user.email!,
-                first_name: user.user_metadata?.first_name || '',
-                last_name: user.user_metadata?.last_name || '',
-                role: 'customer'
-              })
-              .select()
-              .single();
-
-            if (createError) {
-              console.error('Error creating profile:', createError);
-            } else {
-              profileData = newProfile;
-              console.log("New profile created:", newProfile);
-            }
-          } else if (error) {
-            console.error('Error fetching profile:', error);
-          } else {
-            profileData = data;
-            console.log("Profile data fetched:", data);
-          }
-        } catch (profileError) {
-          console.error("Profile fetch error:", profileError);
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          throw new Error(`Profile fetch failed: ${profileError.message}`);
         }
 
-        if (profileData) {
+        if (!profileData) {
+          // Profile doesn't exist, create one
+          console.log("Profile not found, creating new profile");
+          const { data: newProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: user.id,
+              email: user.email!,
+              first_name: user.user_metadata?.first_name || '',
+              last_name: user.user_metadata?.last_name || '',
+              role: 'customer'
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Error creating profile:', createError);
+            throw new Error(`Profile creation failed: ${createError.message}`);
+          }
+          
+          setProfile(newProfile as UserProfile);
+          console.log("New profile created:", newProfile);
+        } else {
           setProfile(profileData as UserProfile);
+          console.log("Profile data fetched:", profileData);
         }
 
         // Fetch orders
-        try {
-          const { data: ordersData, error: ordersError } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-          if (ordersError) {
-            console.error('Error fetching orders:', ordersError);
-          } else {
-            console.log("Orders data:", ordersData);
-            setOrders(ordersData as Order[]);
-          }
-        } catch (ordersError) {
-          console.error("Orders fetch error:", ordersError);
+        if (ordersError) {
+          console.error('Error fetching orders:', ordersError);
+        } else {
+          console.log("Orders data:", ordersData);
+          setOrders(ordersData as Order[] || []);
         }
 
         // Fetch appointments
-        try {
-          const { data: appointmentsData, error: appointmentsError } = await supabase
-            .from('appointments')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('appointment_date', { ascending: false });
+        const { data: appointmentsData, error: appointmentsError } = await supabase
+          .from('appointments')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('appointment_date', { ascending: false });
 
-          if (appointmentsError) {
-            console.error('Error fetching appointments:', appointmentsError);
-          } else {
-            console.log("Appointments data:", appointmentsData);
-            setAppointments(appointmentsData as Appointment[]);
-          }
-        } catch (appointmentsError) {
-          console.error("Appointments fetch error:", appointmentsError);
+        if (appointmentsError) {
+          console.error('Error fetching appointments:', appointmentsError);
+        } else {
+          console.log("Appointments data:", appointmentsData);
+          setAppointments(appointmentsData as Appointment[] || []);
         }
 
       } catch (error) {
         console.error('Error fetching user data:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load profile data';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -131,8 +124,54 @@ const Profile = () => {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">
+                <Home className="h-4 w-4" />
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>My Account</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <span className="ml-4 text-gray-600">Loading your profile...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">
+                <Home className="h-4 w-4" />
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>My Account</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-4">Error Loading Profile</h2>
+          <p className="mb-6 text-gray-600">{error}</p>
+          <div className="space-x-4">
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+            <Link to="/">
+              <Button variant="outline">Go Home</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -141,6 +180,19 @@ const Profile = () => {
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">
+                <Home className="h-4 w-4" />
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>My Account</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">Please Sign In</h2>
           <p className="mb-6">You need to be signed in to view your profile.</p>
