@@ -26,9 +26,20 @@ const Register = () => {
       const { error } = await signUp(email, password, firstName, lastName);
 
       if (error) {
+        let errorMessage = error.message;
+        
+        // Provide more user-friendly error messages
+        if (error.message.includes('User already registered')) {
+          errorMessage = "An account with this email already exists. Please sign in instead or use a different email.";
+        } else if (error.message.includes('Password should be at least')) {
+          errorMessage = "Password must be at least 6 characters long. Please choose a stronger password.";
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = "Please enter a valid email address.";
+        }
+        
         toast({
           title: "Registration Failed",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive"
         });
       } else {
